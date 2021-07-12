@@ -1,0 +1,5 @@
+rootProject.name = 'testkotlinjvm3'
+include 'domain'
+include 'swagger-org'
+include 'app'
+
