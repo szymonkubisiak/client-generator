@@ -2,7 +2,7 @@ package models
 
 class Struct (
     val transportName: String,
-    val fields: List<Field>?,
+    val fields: List<Field>,
     val description: String?,
 
 )
