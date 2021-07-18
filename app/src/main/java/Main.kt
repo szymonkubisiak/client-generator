@@ -14,7 +14,13 @@ object Main {
 
 		val writer = PrintWriter(System.out)
 		val kotlin = KotlinGenerator()
-		api.structs.forEach { kotlin.writeStruct(BaseWriter(writer), it) }
+		//api.structs.forEach { kotlin.writeTransportStruct(BaseWriter(writer), it) }
+		//api.structs.forEach { kotlin.writeDomainStruct(BaseWriter(writer), it) }
+		//api.structs.forEach { kotlin.writeTransportToDomainAdapter(BaseWriter(writer), it) }
+
+		api.structs.first {it.transportName == "BasicTypes"}.also { kotlin.writeTransportStruct(BaseWriter(writer), it) }
+			.also { kotlin.writeDomainStruct(BaseWriter(writer), it) }
+			.also { kotlin.writeTransportToDomainAdapter(BaseWriter(writer), it) }
 		writer.flush()
 		println("Goodbye World!")
 	}

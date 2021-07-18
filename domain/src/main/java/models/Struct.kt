@@ -1,17 +1,9 @@
 package models
 
-class Struct (
-    val transportName: String,
-    val fields: List<Field>,
-    val description: String?,
-
-)
-{
-
-    fun foo() {
-        var test = "abc"
-        var tt = test.let{
-
-        }
-    }
+class Struct(
+	val type: StructTypeDescr,
+	val fields: List<Field>,
+	val description: String?,
+) {
+	val transportName = type.transportName
 }
