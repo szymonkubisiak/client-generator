@@ -13,4 +13,6 @@ dependencies {
     api "io.swagger:swagger-parser"
     api "io.swagger:swagger-compat-spec-parser:1.0.55"
     testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    api "io.swagger.parser.v3:swagger-parser:2.0.27"
 }

@@ -11,6 +11,7 @@ abstract class KotlinGeneratorBase(protected val typeResolver: TypeResolver = Ty
 
 	fun writeStructs(models: List<Struct>, directory: String) {
 		Utils.createDirectories(directory)
+		Utils.cleanupDirectory(directory)
 		models.forEach { struct ->
 			PrintWriter("$directory/${struct.transportName}.kt").use { writer ->
 				writeStruct(BaseWriter(writer), struct)
