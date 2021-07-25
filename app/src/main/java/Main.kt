@@ -10,18 +10,28 @@ object Main {
 		println("Hello World!")
 		val swg = parseAndPrepareSwagger("src/test/resources/types.json")
 		val api = SwaggerConverter().swagger2api(swg)
-		//new KotlinGenerator().writeStructs(api.getStructs(), name -> new PrintWriter(System.out));
 
-		val writer = PrintWriter(System.out)
-		val kotlin = KotlinGenerator()
-		//api.structs.forEach { kotlin.writeTransportStruct(BaseWriter(writer), it) }
-		//api.structs.forEach { kotlin.writeDomainStruct(BaseWriter(writer), it) }
-		//api.structs.forEach { kotlin.writeTransportToDomainAdapter(BaseWriter(writer), it) }
+		val kotlinT = KotlinGeneratorTransport()
+		val kotlinD = KotlinGeneratorDomain()
+		val kotlinT2D = KotlinGeneratorT2D()
 
-		api.structs.first {it.transportName == "BasicTypes"}.also { kotlin.writeTransportStruct(BaseWriter(writer), it) }
-			.also { kotlin.writeDomainStruct(BaseWriter(writer), it) }
-			.also { kotlin.writeTransportToDomainAdapter(BaseWriter(writer), it) }
-		writer.flush()
+
+		val transportDir = "out/transport"
+		val domainDir = "out/domain"
+		val converterInDir = "out/convin"
+		val converterOutDir = "out/convout"
+
+		//TODO: dodać package
+		kotlinT.writeStructs(api.structs, transportDir)
+		kotlinD.writeStructs(api.structs, domainDir)
+		kotlinT2D.writeStructs(api.structs, converterInDir)
+
+		val outWriter = PrintWriter(System.out)
+		api.structs.first { it.transportName == "BasicTypes" }
+			.also { kotlinT.writeStruct(BaseWriter(outWriter), it) }
+			.also { kotlinD.writeStruct(BaseWriter(outWriter), it) }
+			.also { kotlinT2D.writeStruct(BaseWriter(outWriter), it) }
+		outWriter.flush()
 		println("Goodbye World!")
 	}
 
