@@ -1,26 +1,26 @@
 package models
 
-class Endpoint (
+class Endpoint(
 	val name: String,
 	val path: String,
 	val operation: String,
 	val params: List<Param>,
 	val response: TypeDescr?,
 	val mediaType: String?,
-		)
+)
 
-class Param (
+class Param(
 	override val transportName: String,
 	override val type: TypeDescr,
 	override val isArray: Boolean,
 	override val mandatory: Boolean,
 	override val description: String?,
 	val location: Location,
-) : IField{
-	enum class Location {
-		PATH,
-		QUERY,
-		BODY,
-		HEADER,
+) : IField {
+	sealed class Location {
+		object PATH : Location()
+		object QUERY : Location()
+		data class BODY(val mediaType: String) : Location()
+		object HEADER : Location()
 	}
 }

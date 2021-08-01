@@ -73,7 +73,7 @@ class OpenApiConverter {
 			isArray = false,
 			mandatory = true,
 			description = input.description,
-			location = Param.Location.BODY
+			location = Param.Location.BODY(bodyType.first)
 		)
 		return listOf(retval)
 	}
@@ -82,7 +82,7 @@ class OpenApiConverter {
 		val location = when (input.`in`) {
 			"path" -> Param.Location.PATH
 			"query" -> Param.Location.QUERY
-			"body" -> Param.Location.BODY
+			"body" -> throw IllegalArgumentException("BODY argument defined in unexpected place")
 			"header" -> Param.Location.HEADER
 			"cookie" -> return null
 			else -> throw IllegalArgumentException("Unrecognized REST operation parameter location: " + input.`in`)

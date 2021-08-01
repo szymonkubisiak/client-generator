@@ -12,6 +12,7 @@ object Main {
 	val kotlinT = KotlinGeneratorTransport()
 	val kotlinD = KotlinGeneratorDomain()
 	val kotlinT2D = KotlinGeneratorT2D()
+	val kotlinRetrofit = KotlinGeneratorRetrofit()
 
 	@JvmStatic
 	fun main(args: Array<String>) {

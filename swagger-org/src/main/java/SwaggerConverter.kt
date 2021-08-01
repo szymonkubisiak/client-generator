@@ -12,14 +12,14 @@ class SwaggerConverter {
 
 	private val typeFactory = TypeDescrFactory()
 
-	fun swagger2api(input: Swagger): Api {
-		val structs = input.definitions.map { oneModel ->
-			val structType = typeFactory.getRefType(oneModel.key)
-			model2struct(structType, oneModel.value)
-		}
-		val retval = Api(structs)
-		return retval
-	}
+//	fun swagger2api(input: Swagger): Api {
+//		val structs = input.definitions.map { oneModel ->
+//			val structType = typeFactory.getRefType(oneModel.key)
+//			model2struct(structType, oneModel.value)
+//		}
+//		val retval = Api(structs)
+//		return retval
+//	}
 
 	fun model2struct(type: StructTypeDescr, input: Model): Struct {
 		if (input !is ModelImpl || input.type != "object")

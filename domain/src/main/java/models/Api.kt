@@ -2,7 +2,7 @@ package models
 
 class Api(
 	val structs: List<Struct>,
-	val paths: List<Endpoint>? = null,
+	val paths: List<Endpoint>,
 ) {
 
 	val incoming = ArrayList<StructTypeDescr>()
