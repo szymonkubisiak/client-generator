@@ -1,0 +1,227 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+	"description": "Example for testing type definitions, hacked out from swagger petstore",
+	"version": "1.0.0",
+	"title": "Szymon Types"
+  },
+  "paths": {
+	"/foo/{id}/bar": {
+	  "get": {
+		"tags": [
+		  "Tag"
+		],
+		"description": "description of example endpoint",
+		"operationId": "foo",
+		"parameters": [
+		  {
+			"name": "id",
+			"in": "path",
+			"description": "description of in-path parameter",
+			"required": true,
+			"schema": {
+			  "type": "integer",
+			  "format": "int32"
+			}
+		  },
+		  {
+			"name": "petId",
+			"in": "query",
+			"description": "description of GET-query parameter",
+			"required": false,
+			"schema": {
+			  "type": "string"
+			}
+		  }
+		],
+		"responses": {
+		  "200": {
+			"description": "OK",
+			"content": {
+			  "application/json": {
+				"schema": {
+				  "$ref": "#/components/schemas/BasicTypes"
+				}
+			  }
+			}
+		  }
+		}
+	  }
+	}
+  },
+  "components": {
+	"schemas": {
+	  "BasicTypes": {
+		"type": "object",
+		"properties": {
+		  "wholeNumber": {
+			"type": "integer",
+			"description": "number that can be written without a fractional component"
+		  },
+		  "text": {
+			"type": "string",
+			"description": "sequence of alphanumeric text"
+		  },
+		  "binary": {
+			"type": "boolean",
+			"description": "represents two values: true and false"
+		  }
+		}
+	  },
+	  "MandatoryVsOptional": {
+		"type": "object",
+		"required": [
+		  "stringMandatory",
+		  "intMandatory"
+		],
+		"properties": {
+		  "stringMandatory": {
+			"type": "string"
+		  },
+		  "stringOptional": {
+			"type": "string"
+		  },
+		  "intMandatory": {
+			"type": "integer"
+		  },
+		  "intOptional": {
+			"type": "integer"
+		  }
+		}
+	  },
+	  "NumericFormats": {
+		"type": "object",
+		"properties": {
+		  "intDefault": {
+			"type": "integer"
+		  },
+		  "int32": {
+			"type": "integer",
+			"format": "int32"
+		  },
+		  "int64": {
+			"type": "integer",
+			"format": "int64"
+		  },
+		  "floating32": {
+			"type": "number",
+			"format": "float"
+		  },
+		  "floating64": {
+			"type": "number",
+			"format": "double"
+		  }
+		}
+	  },
+	  "StringFormats": {
+		"type": "object",
+		"properties": {
+		  "plain": {
+			"type": "string",
+			"description": "plain string without any format"
+		  },
+		  "date": {
+			"type": "string",
+			"format": "date",
+			"description": "full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21"
+		  },
+		  "dateTime": {
+			"type": "string",
+			"format": "date-time",
+			"description": "the date-time notation as defined by RFC 3339, section 5.6, for example, 2017-07-21T17:32:28Z"
+		  },
+		  "password": {
+			"type": "string",
+			"format": "password",
+			"description": "a hint to UIs to mask the input"
+		  },
+		  "byte": {
+			"type": "string",
+			"format": "byte",
+			"description": "base64-encoded characters, for example, U3dhZ2dlciByb2Nrcw=="
+		  },
+		  "binary": {
+			"type": "string",
+			"format": "binary",
+			"description": "binary data, used to describe files"
+		  }
+		}
+	  },
+	  "Arrays": {
+		"type": "object",
+		"required": [
+		  "stringArrayMandatory",
+		  "intArrayMandatory"
+		],
+		"properties": {
+		  "stringArrayMandatory": {
+			"type": "array",
+			"items": {
+			  "type": "string"
+			}
+		  },
+		  "stringArrayOptional": {
+			"type": "array",
+			"items": {
+			  "type": "string"
+			}
+		  },
+		  "intArrayMandatory": {
+			"type": "array",
+			"items": {
+			  "type": "integer"
+			}
+		  },
+		  "intArrayOptional": {
+			"type": "array",
+			"items": {
+			  "type": "integer"
+			}
+		  }
+		}
+	  },
+	  "Enums": {
+		"type": "object",
+		"properties": {
+		  "status": {
+			"type": "string",
+			"description": "enumeration type",
+			"enum": [
+			  "ONE",
+			  "TWO",
+			  "THREE"
+			]
+		  }
+		}
+	  },
+	  "ComplexStruct": {
+		"description": "a struct containing fields of type of another struct",
+		"type": "object",
+		"required": [
+		  "objectMandatory",
+		  "objectArrayMandatory"
+		],
+		"properties": {
+		  "objectOptional": {
+			"$ref": "#/components/schemas/BasicTypes"
+		  },
+		  "objectMandatory": {
+			"$ref": "#/components/schemas/BasicTypes"
+		  },
+		  "objectArrayMandatory": {
+			"type": "array",
+			"items": {
+			  "$ref": "#/components/schemas/BasicTypes"
+			}
+		  },
+		  "objectArrayOptional": {
+			"type": "array",
+			"items": {
+			  "$ref": "#/components/schemas/BasicTypes"
+			}
+		  }
+		}
+	  }
+	}
+  }
+}

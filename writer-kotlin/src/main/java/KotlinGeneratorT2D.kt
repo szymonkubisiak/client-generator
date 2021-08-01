@@ -7,6 +7,8 @@ import java.io.Writer
 @Suppress("NAME_SHADOWING")
 class KotlinGeneratorT2D : KotlinGeneratorBase() {
 
+	override fun fileName(type: TypeDescr): String = type.adapterT2DName()
+
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
 		val transportTypeName = model.type.transportFinalName()
 		val domainTypeName = model.type.domainFinalName()

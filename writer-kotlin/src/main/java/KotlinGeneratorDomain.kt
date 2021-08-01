@@ -1,15 +1,14 @@
 import Namer.domainFinalName
-import Namer.transportFinalName
-import Namer.adapterT2DName
 import models.*
-import java.io.Writer
 
 class KotlinGeneratorDomain : KotlinGeneratorBase() {
+
+	override fun fileName(type: TypeDescr): String = type.domainFinalName()
 
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
 		writer.writeLine("import java.util.*")
 		writer.writeLine("")
-		writer.writeLine("class ${model.type.domainFinalName()} (")
+		writer.writeLine("class ${model.type.domainFinalName()}(")
 		IndentedWriter(writer).use { writer ->
 
 			model.fields.forEach {

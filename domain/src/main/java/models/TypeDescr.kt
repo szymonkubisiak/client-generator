@@ -19,7 +19,9 @@ data class BuiltinTypeDescr internal constructor(override val transportName: Str
 /**
  * Describes a type that is defined in a given spec.
  */
-data class StructTypeDescr (override val transportName: String): TypeDescr
+data class StructTypeDescr (override val transportName: String): TypeDescr {
+	var definition: Struct? = null
+}
 
 
 class TypeDescrFactory {
