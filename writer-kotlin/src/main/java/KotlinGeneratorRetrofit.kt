@@ -1,8 +1,23 @@
 import Namer.transportFinalName
 import models.Endpoint
 import models.Param
+import java.io.PrintWriter
 
+@Suppress("NAME_SHADOWING")
 class KotlinGeneratorRetrofit {
+
+	fun fileName(type: Endpoint): String = type.name + "Service"
+
+	fun writeEndpoits(input: List<Endpoint>, directory: String) {
+		Utils.createDirectories(directory)
+		Utils.cleanupDirectory(directory)
+		input.forEach { one ->
+			PrintWriter("$directory/${fileName(one)}.kt").use { writer ->
+				writeEndpoint(BaseWriter(writer), one)
+				writer.flush()
+			}
+		}
+	}
 
 	fun writeEndpoint(writer: GeneratorWriter, endpoint: Endpoint) {
 		writer.writeLine("import io.reactivex.Single")
@@ -12,7 +27,7 @@ class KotlinGeneratorRetrofit {
 
 		writer.writeLine("interface " + endpoint.name + "Service {")
 		IndentedWriter(writer).use { writer ->
-			writer.writeLine("@GET(\"" + endpoint.path.trimStart('/') + "\")")
+			writer.writeLine("@" + endpoint.retrofitAnnotation() + "(\"" + endpoint.path.trimStart('/') + "\")")
 			writer.writeLine("fun " + endpoint.name + "(")
 			IndentedWriter(writer).use { writer ->
 				for (param in endpoint.params) {
@@ -32,7 +47,7 @@ class KotlinGeneratorRetrofit {
 				}
 			}
 			endpoint.response?.also {
-				writer.writeLine("): Single<" + it.transportName + ">")
+				writer.writeLine("): Single<" + it.transportFinalName() + ">")
 			} ?: run {
 				writer.writeLine("): Completable")
 			}
@@ -49,5 +64,8 @@ class KotlinGeneratorRetrofit {
 				is Param.Location.BODY -> "Body"
 				Param.Location.HEADER -> "Header"
 			}
+
+		fun Endpoint.retrofitAnnotation() =
+			this.operation.toUpperCase()
 	}
 }

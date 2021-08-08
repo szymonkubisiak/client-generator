@@ -1,6 +1,7 @@
 import Namer.domainFinalName
 import models.*
 
+@Suppress("NAME_SHADOWING")
 class KotlinGeneratorDomain : KotlinGeneratorBase() {
 
 	override fun fileName(type: TypeDescr): String = type.domainFinalName()

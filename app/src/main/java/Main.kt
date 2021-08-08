@@ -28,23 +28,30 @@ object Main {
 
 	private fun writeSampleToOut(api: Api) {
 		val outWriter = PrintWriter(System.out)
-		api.structs.first { it.transportName == "BasicTypes" }
-			.also { kotlinT.writeStruct(BaseWriter(outWriter), it) }
-			.also { kotlinD.writeStruct(BaseWriter(outWriter), it) }
-			.also { kotlinT2D.writeStruct(BaseWriter(outWriter), it) }
+		api.structs.firstOrNull { it.type.transportName == "BasicTypes" }?.also {
+			kotlinT.writeStruct(BaseWriter(outWriter), it)
+			kotlinD.writeStruct(BaseWriter(outWriter), it)
+			kotlinT2D.writeStruct(BaseWriter(outWriter), it)
+		}
 		outWriter.flush()
 	}
 
 	private fun writeAllToFiles(api: Api) {
-		val transportDir = "out/transport"
-		val domainDir = "out/domain"
-		val converterInDir = "out/convin"
-		val converterOutDir = "out/convout"
+		//TODO: move those to some config
+		val projectDir = "out"
+		val projectPackage = "com.example"
 
-		//TODO: dodać package
+		val transportDir = "$projectDir/conn/src/main/java/$projectPackage/conn/models"
+		val domainDir = "$projectDir/domain/src/main/java/$projectPackage/domain/models"
+		val converterInDir = "$projectDir/conn/src/main/java/$projectPackage/conn/converters"
+		val converterOutDir = "$projectDir/conn/src/main/java/$projectPackage/conn/converters"
+		val retrofitDir = "$projectDir/conn/src/main/java/$projectPackage/conn/retrofit"
+
+		//TODO: add packages
 		kotlinT.writeStructs(api.structs, transportDir)
 		kotlinD.writeStructs(api.structs, domainDir)
 		kotlinT2D.writeStructs(api.structs, converterInDir)
+		kotlinRetrofit.writeEndpoits(api.paths, retrofitDir)
 	}
 
 	private fun parseAndPrepareSwagger(path: String): Swagger {

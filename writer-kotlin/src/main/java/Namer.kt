@@ -1,3 +1,5 @@
+import models.BuiltinTypeDescr
+import models.StructTypeDescr
 import models.TypeDescr
 
 /**
@@ -8,6 +10,12 @@ object Namer {
 	private fun getAdapterT2DName(name: String) = T2DAdapterTemplate.format(name)
 
 	fun TypeDescr.adapterT2DName() = getAdapterT2DName(this.transportName)
-	fun TypeDescr.transportFinalName() = this.transportName + "Pojo"
+	fun TypeDescr.transportFinalName(): String {
+		return when (this) {
+			is StructTypeDescr -> this.transportName + "Pojo"
+			is BuiltinTypeDescr -> TypeResolver.instance.resolveTransportType(this)
+		}
+	}
+
 	fun TypeDescr.domainFinalName() = this.transportName// + "Dom"
 }

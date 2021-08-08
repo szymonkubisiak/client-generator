@@ -1,7 +1,7 @@
 import models.*
 import java.io.PrintWriter
 
-abstract class KotlinGeneratorBase(protected val typeResolver: TypeResolver = TypeResolver()) {
+abstract class KotlinGeneratorBase(protected val typeResolver: TypeResolver = TypeResolver.instance) {
 	abstract fun writeStruct(writer: GeneratorWriter, model: Struct)
 	abstract fun writeField(writer: GeneratorWriter, field: Field)
 	abstract fun fileName(type: TypeDescr): String

@@ -4,7 +4,7 @@ import models.TypeDescr
 import models.TypeDescrFactory
 import java.lang.Exception
 
-class TypeResolver {
+class TypeResolver private constructor(){
 	private val typeFactory = TypeDescrFactory()
 
 	private val transportTypes = HashMap<TypeDescr, String>()
@@ -92,5 +92,9 @@ class TypeResolver {
 		domainTypes[type] = kotlinModel
 		adaptersT2D[type] = transportToModelAdapter
 		//TODO: adaptersD2T[type] = modelToTransportAdapter
+	}
+
+	companion object{
+		val instance = TypeResolver()
 	}
 }

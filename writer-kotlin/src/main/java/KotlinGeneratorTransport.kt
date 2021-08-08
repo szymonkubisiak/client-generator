@@ -1,7 +1,6 @@
 import Namer.transportFinalName
 import models.*
 
-
 @Suppress("NAME_SHADOWING")
 class KotlinGeneratorTransport: KotlinGeneratorBase() {
 
@@ -19,10 +18,7 @@ class KotlinGeneratorTransport: KotlinGeneratorBase() {
 
 	override fun writeField(writer: GeneratorWriter, field: Field) {
 		val name = field.transportName
-		var rawType = typeResolver.resolveTransportType(field.type)
-		//TODO: h4x
-		if(rawType == field.type.transportName)
-			rawType = field.type.transportFinalName()
+		val rawType = typeResolver.resolveTransportType(field.type)
 		val type = if (!field.isArray) rawType else "List<$rawType>"
 		val description = field.description?.let { "\t//$it" } ?: ""
 
