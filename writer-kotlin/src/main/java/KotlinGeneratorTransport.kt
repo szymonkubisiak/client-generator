@@ -18,7 +18,7 @@ class KotlinGeneratorTransport: KotlinGeneratorBase() {
 
 	override fun writeField(writer: GeneratorWriter, field: Field) {
 		val name = field.transportName
-		val rawType = typeResolver.resolveTransportType(field.type)
+		val rawType = field.type.transportFinalName()
 		val type = if (!field.isArray) rawType else "List<$rawType>"
 		val description = field.description?.let { "\t//$it" } ?: ""
 
