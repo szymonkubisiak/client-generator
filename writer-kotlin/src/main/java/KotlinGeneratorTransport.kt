@@ -1,12 +1,15 @@
 import Namer.transportFinalName
 import models.*
+import utils.PackageConfig
 
 @Suppress("NAME_SHADOWING")
-class KotlinGeneratorTransport: KotlinGeneratorBase() {
+class KotlinGeneratorTransport(pkg: PackageConfig): KotlinGeneratorBase(pkg) {
 
 	override fun fileName(type: TypeDescr): String = type.transportFinalName()
 
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
+		writer.writeLine("package " + pkg.toPackage())
+		writer.writeLine("")
 		writer.writeLine("class ${model.type.transportFinalName()} {")
 		IndentedWriter(writer).use { writer ->
 			model.fields.forEach {

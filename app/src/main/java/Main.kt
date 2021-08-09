@@ -5,14 +5,32 @@ import io.swagger.parser.util.InlineModelResolver
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.parser.OpenAPIV3Parser
 import models.Api
+import utils.Package
+import utils.PackageConfig
 import java.io.PrintWriter
 
 object Main {
 
-	val kotlinT = KotlinGeneratorTransport()
-	val kotlinD = KotlinGeneratorDomain()
-	val kotlinT2D = KotlinGeneratorT2D()
-	val kotlinRetrofit = KotlinGeneratorRetrofit()
+	val kotlinT: KotlinGeneratorTransport
+	val kotlinD: KotlinGeneratorDomain
+	val kotlinT2D: KotlinGeneratorT2D
+	val kotlinRetrofit: KotlinGeneratorRetrofit
+
+	init {
+		//TODO: move those to some config
+		val master = PackageConfig(rootDir = Package("out"), project = Package("com", "example"))
+		val transport = master.copy(module = Package("conn"), suffix = Package("models"))
+		kotlinT = KotlinGeneratorTransport(transport)
+
+		val domain = master.copy(module = Package("domain"), suffix = Package("models"))
+		kotlinD = KotlinGeneratorDomain(domain)
+
+		val t2d = master.copy(module = Package("conn"), suffix = Package("converters"))
+		kotlinT2D = KotlinGeneratorT2D(t2d, kotlinT.pkg, kotlinD.pkg)
+
+		val retrofit = master.copy(module = Package("conn"), suffix = Package("retrofit"))
+		kotlinRetrofit = KotlinGeneratorRetrofit(retrofit, kotlinT.pkg)
+	}
 
 	@JvmStatic
 	fun main(args: Array<String>) {
@@ -37,21 +55,10 @@ object Main {
 	}
 
 	private fun writeAllToFiles(api: Api) {
-		//TODO: move those to some config
-		val projectDir = "out"
-		val projectPackage = "com.example"
-
-		val transportDir = "$projectDir/conn/src/main/java/$projectPackage/conn/models"
-		val domainDir = "$projectDir/domain/src/main/java/$projectPackage/domain/models"
-		val converterInDir = "$projectDir/conn/src/main/java/$projectPackage/conn/converters"
-		val converterOutDir = "$projectDir/conn/src/main/java/$projectPackage/conn/converters"
-		val retrofitDir = "$projectDir/conn/src/main/java/$projectPackage/conn/retrofit"
-
-		//TODO: add packages
-		kotlinT.writeStructs(api.structs, transportDir)
-		kotlinD.writeStructs(api.structs, domainDir)
-		kotlinT2D.writeStructs(api.structs, converterInDir)
-		kotlinRetrofit.writeEndpoits(api.paths, retrofitDir)
+		kotlinT.writeStructs(api.structs)
+		kotlinD.writeStructs(api.structs)
+		kotlinT2D.writeStructs(api.structs)
+		kotlinRetrofit.writeEndpoits(api.paths)
 	}
 
 	private fun parseAndPrepareSwagger(path: String): Swagger {

@@ -1,13 +1,14 @@
 import Namer.domainFinalName
 import models.*
+import utils.PackageConfig
 
 @Suppress("NAME_SHADOWING")
-class KotlinGeneratorDomain : KotlinGeneratorBase() {
+class KotlinGeneratorDomain(pkg: PackageConfig): KotlinGeneratorBase(pkg) {
 
 	override fun fileName(type: TypeDescr): String = type.domainFinalName()
 
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
-		writer.writeLine("import java.util.*")
+		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
 		writer.writeLine("class ${model.type.domainFinalName()}(")
 		IndentedWriter(writer).use { writer ->

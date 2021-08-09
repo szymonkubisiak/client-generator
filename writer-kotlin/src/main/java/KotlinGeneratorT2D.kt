@@ -2,19 +2,22 @@ import Namer.domainFinalName
 import Namer.transportFinalName
 import Namer.adapterT2DName
 import models.*
+import utils.PackageConfig
 import java.io.Writer
 
 @Suppress("NAME_SHADOWING")
-class KotlinGeneratorT2D : KotlinGeneratorBase() {
+class KotlinGeneratorT2D(
+	pkg: PackageConfig,
+	val conn: PackageConfig,
+	val domain: PackageConfig,
+) : KotlinGeneratorBase(pkg) {
 
 	override fun fileName(type: TypeDescr): String = type.adapterT2DName()
 
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
+		writeImports(writer)
 		val transportTypeName = model.type.transportFinalName()
 		val domainTypeName = model.type.domainFinalName()
-		writer.writeLine("import java.time.ZonedDateTime")
-		writer.writeLine("import java.util.*")
-		writer.writeLine("")
 		writer.writeLine("fun ${model.type.adapterT2DName()}(input: $transportTypeName): $domainTypeName {")
 		IndentedWriter(writer).use { writer ->
 			writer.writeLine("val retval = $domainTypeName (")
@@ -50,5 +53,13 @@ class KotlinGeneratorT2D : KotlinGeneratorBase() {
 		}
 
 		writer.writeLine("$expression,")
+	}
+
+	private fun writeImports(writer: GeneratorWriter) {
+		writer.writeLine("package " + pkg.toPackage())
+		writer.writeLine("")
+		writer.writeLine("import " + conn.toPackage() + ".*")
+		writer.writeLine("import " + domain.toPackage() + ".*")
+		writer.writeLine("")
 	}
 }

@@ -1,14 +1,19 @@
 import Namer.transportFinalName
 import models.Endpoint
 import models.Param
+import utils.PackageConfig
 import java.io.PrintWriter
 
 @Suppress("NAME_SHADOWING")
-class KotlinGeneratorRetrofit {
+class KotlinGeneratorRetrofit(
+	val pkg: PackageConfig,
+	val conn: PackageConfig,
+) {
 
 	fun fileName(type: Endpoint): String = type.name + "Service"
 
-	fun writeEndpoits(input: List<Endpoint>, directory: String) {
+	fun writeEndpoits(input: List<Endpoint>) {
+		val directory = pkg.toDir()
 		Utils.createDirectories(directory)
 		Utils.cleanupDirectory(directory)
 		input.forEach { one ->
@@ -20,8 +25,11 @@ class KotlinGeneratorRetrofit {
 	}
 
 	fun writeEndpoint(writer: GeneratorWriter, endpoint: Endpoint) {
+		writer.writeLine("package " + pkg.toPackage())
+		writer.writeLine("")
 		writer.writeLine("import io.reactivex.Single")
 		writer.writeLine("import io.reactivex.Completable")
+		writer.writeLine("import " + conn.toPackage() + ".*")
 		writer.writeLine("import retrofit2.http.*")
 		writer.writeLine("")
 
