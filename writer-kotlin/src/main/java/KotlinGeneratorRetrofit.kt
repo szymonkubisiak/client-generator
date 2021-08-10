@@ -56,7 +56,9 @@ class KotlinGeneratorRetrofit(
 				}
 			}
 			endpoint.response?.also {
-				writer.writeLine("): Single<" + it.transportFinalName() + ">")
+				val rawType = it.type.transportFinalName()
+				val type = if (!it.isArray) rawType else "List<$rawType>"
+				writer.writeLine("): Single<$type>")
 			} ?: run {
 				writer.writeLine("): Completable")
 			}

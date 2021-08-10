@@ -45,8 +45,14 @@ class OpenApiConverter {
 		)
 	}
 
-	fun pickOneContent(input: Content): Pair<String, TypeDescr>? {
-		val entries = input.map { Pair(it.key, resolveType(it.value.schema)) }
+	//TODO: make something that encapsulates TypeDescr + isArray, because it's 3rd place this shows up
+	fun pickOneContent(input: Content): Pair<String, Field>? {
+		val entries = input.map {
+			Pair(
+				it.key,
+				property2field(it.key, it.value.schema, true)//all params except schema are made up
+			)
+		}
 		val retval = if (entries.size == 1) {
 			entries.first()
 		} else {
@@ -70,8 +76,8 @@ class OpenApiConverter {
 
 		val retval = Param(
 			transportName = "body",
-			type = bodyType.second,
-			isArray = false,
+			type = bodyType.second.type,
+			isArray = bodyType.second.isArray,
 			mandatory = true,
 			description = input.description,
 			location = Param.Location.BODY(bodyType.first)
