@@ -30,8 +30,8 @@ class OpenApiConverter {
 
 	fun operation2Endpoint(path: String, operation: String, input: Operation): Endpoint {
 		val ap: ApiResponse? = input.responses?.get("200")
-
 		val response = ap?.content?.let(::pickOneContent)
+		val security = input.security?.flatMap { it.keys }
 
 		return Endpoint(
 			input.operationId,
@@ -41,6 +41,7 @@ class OpenApiConverter {
 				?: emptyList()),
 			response?.second,
 			response?.first,
+			security,
 		)
 	}
 

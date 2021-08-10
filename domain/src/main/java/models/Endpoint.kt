@@ -7,6 +7,7 @@ class Endpoint(
 	val params: List<Param>,
 	val response: TypeDescr?,
 	val mediaType: String?,
+	val security: List<String>?,
 )
 
 class Param(

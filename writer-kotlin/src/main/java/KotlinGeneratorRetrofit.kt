@@ -33,6 +33,7 @@ class KotlinGeneratorRetrofit(
 		writer.writeLine("import retrofit2.http.*")
 		writer.writeLine("")
 
+		endpoint.security?.also { writer.writeLine("//security: " + it.joinToString()) }
 		writer.writeLine("interface " + endpoint.name + "Service {")
 		IndentedWriter(writer).use { writer ->
 			writer.writeLine("@" + endpoint.retrofitAnnotation() + "(\"" + endpoint.path.trimStart('/') + "\")")
