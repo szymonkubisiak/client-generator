@@ -15,6 +15,7 @@ object Main {
 	val kotlinD: KotlinGeneratorDomain
 	val kotlinT2D: KotlinGeneratorT2D
 	val kotlinRetrofit: KotlinGeneratorRetrofit
+	val kotlinRetrofitModule: KotlinGeneratorRetrofitModule
 
 	init {
 		//TODO: move those to some config
@@ -30,6 +31,9 @@ object Main {
 
 		val retrofit = master.copy(module = Package("conn"), suffix = Package("retrofit"))
 		kotlinRetrofit = KotlinGeneratorRetrofit(retrofit, kotlinT.pkg)
+
+		val retrofitModule = master.copy(module = Package("conn"), suffix = Package("dagger"))
+		kotlinRetrofitModule = KotlinGeneratorRetrofitModule(retrofitModule, kotlinRetrofit.pkg)
 	}
 
 	@JvmStatic
@@ -59,6 +63,7 @@ object Main {
 		kotlinD.writeStructs(api.structs)
 		kotlinT2D.writeStructs(api.structs)
 		kotlinRetrofit.writeEndpoits(api.paths)
+		kotlinRetrofitModule.writeEndpoints(api.paths)
 	}
 
 	private fun parseAndPrepareSwagger(path: String): Swagger {
