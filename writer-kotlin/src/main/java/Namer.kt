@@ -1,6 +1,4 @@
-import models.BuiltinTypeDescr
-import models.StructTypeDescr
-import models.TypeDescr
+import models.*
 
 /**
  * This is the central authority on what names structs and adapters will end up with
@@ -18,4 +16,7 @@ object Namer {
 	}
 
 	fun TypeDescr.domainFinalName() = this.transportName// + "Dom"
+
+	fun Endpoint.serviceClassName() = this.name.capitalize() + "Service"
+	fun Endpoint.serviceMethodName() = this.name.decapitalize() + "Service"
 }

@@ -1,3 +1,5 @@
+import Namer.serviceClassName
+import Namer.serviceMethodName
 import Namer.transportFinalName
 import models.Endpoint
 import models.Param
@@ -10,7 +12,7 @@ class KotlinGeneratorRetrofit(
 	val conn: PackageConfig,
 ) {
 
-	fun fileName(type: Endpoint): String = type.name + "Service"
+	fun fileName(endpoint: Endpoint): String = endpoint.serviceClassName()
 
 	fun writeEndpoits(input: List<Endpoint>) {
 		val directory = pkg.toDir()
@@ -34,10 +36,10 @@ class KotlinGeneratorRetrofit(
 		writer.writeLine("")
 
 		endpoint.security?.also { writer.writeLine("//security: " + it.joinToString()) }
-		writer.writeLine("interface " + endpoint.name + "Service {")
+		writer.writeLine("interface " + endpoint.serviceClassName() + " {")
 		IndentedWriter(writer).use { writer ->
 			writer.writeLine("@" + endpoint.retrofitAnnotation() + "(\"" + endpoint.path.trimStart('/') + "\")")
-			writer.writeLine("fun " + endpoint.name + "(")
+			writer.writeLine("fun " + endpoint.serviceMethodName() + "(")
 			IndentedWriter(writer).use { writer ->
 				for (param in endpoint.params) {
 

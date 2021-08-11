@@ -1,3 +1,4 @@
+import Namer.serviceClassName
 import models.Endpoint
 import utils.PackageConfig
 import java.io.PrintWriter
@@ -43,7 +44,7 @@ class KotlinGeneratorRetrofitModule(
 
 	fun writeEndpoint(writer: GeneratorWriter, endpoint: Endpoint) {
 
-		val serviceName = endpoint.name + "Service"
+		val serviceName = endpoint.serviceClassName()
 
 		endpoint.security?.also { writer.writeLine("//security: " + it.joinToString()) }
 		writer.writeLine("@Provides")
