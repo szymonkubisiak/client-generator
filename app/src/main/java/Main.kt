@@ -20,19 +20,20 @@ object Main {
 	init {
 		//TODO: move those to some config
 		val master = PackageConfig(rootDir = Package("out"), project = Package("com", "example"))
-		val transport = master.copy(module = Package("conn"), suffix = Package("models"))
+		val generatedPrefix = "generated"
+		val transport = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "models"))
 		kotlinT = KotlinGeneratorTransport(transport)
 
-		val domain = master.copy(module = Package("domain"), suffix = Package("models"))
+		val domain = master.copy(module = Package("domain"), suffix = Package(generatedPrefix, "models"))
 		kotlinD = KotlinGeneratorDomain(domain)
 
-		val t2d = master.copy(module = Package("conn"), suffix = Package("converters"))
+		val t2d = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "converters"))
 		kotlinT2D = KotlinGeneratorT2D(t2d, kotlinT.pkg, kotlinD.pkg)
 
-		val retrofit = master.copy(module = Package("conn"), suffix = Package("retrofit"))
+		val retrofit = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "retrofit"))
 		kotlinRetrofit = KotlinGeneratorRetrofit(retrofit, kotlinT.pkg)
 
-		val retrofitModule = master.copy(module = Package("conn"), suffix = Package("dagger"))
+		val retrofitModule = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "dagger"))
 		kotlinRetrofitModule = KotlinGeneratorRetrofitModule(retrofitModule, kotlinRetrofit.pkg)
 	}
 
