@@ -41,18 +41,18 @@ class KotlinGeneratorRetrofit(
 			IndentedWriter(writer).use { writer ->
 				for (param in endpoint.params) {
 
-					val location = param.location.retrofitAnnotation()
+
 					val name = param.transportName
+					val location = param.location.retrofitAnnotation(name)
 					val type = param.type.transportFinalName()
 
-					writer.writeLine("@$location(\"$name\") $name: $type,")
+					writer.writeLine("@$location $name: $type,")
 
 					(param.location as? Param.Location.BODY)?.mediaType?.also {
 						if (it.contains("form")) {
 							writer.writeLine("//TODO: MediaType: " + it)
 						}
 					}
-
 				}
 			}
 			endpoint.response?.also {
@@ -68,12 +68,13 @@ class KotlinGeneratorRetrofit(
 	}
 
 	companion object {
-		fun Param.Location.retrofitAnnotation() =
+		fun Param.Location.retrofitAnnotation(name: String) =
 			when (this) {
-				Param.Location.PATH -> "Path"
-				Param.Location.QUERY -> "Query"
-				is Param.Location.BODY -> "Body"
-				Param.Location.HEADER -> "Header"
+				Param.Location.PATH -> "Path(\"$name\")"
+				Param.Location.QUERY -> "Query(\"$name\")"
+				is Param.Location.BODY -> "Body()"
+				Param.Location.HEADER -> "Header(\"$name\")"
+				Param.Location.COOKIE -> "Header(\"Cookie\")"
 			}
 
 		fun Endpoint.retrofitAnnotation() =
