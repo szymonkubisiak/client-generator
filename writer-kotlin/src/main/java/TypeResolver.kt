@@ -51,13 +51,13 @@ class TypeResolver private constructor(){
 		//Any String
 		addType("string", null, "String")
 		// – full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21
-		addType("string", "date", "String", "Date", "Date.from(ZonedDateTime.parse(%s).toInstant())")
+		addType("string", "Date", "String")
 		// – the date-time notation as defined by RFC 3339, section 5.6, for example, 2017-07-21T17:32:28Z
-		addType("string", "date-time", "String", "Date", "Date.from(ZonedDateTime.parse(%s).toInstant())")
+		addType("string", "date-time", "String")
 		// – a hint to UIs to mask the input
 		addType("string", "password", "String")
 		// – base64-encoded characters, for example, U3dhZ2dlciByb2Nrcw ==
-		addType("string", "byte", "String", "ByteArray", "Base64.getDecoder().decode(%s)")
+		addType("string", "byte", "String",)
 		// – binary data, used to describe files (see Files below)
 		addType("string", "binary", "String")
 	}
