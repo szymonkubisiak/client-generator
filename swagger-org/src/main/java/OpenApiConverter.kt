@@ -13,9 +13,7 @@ class OpenApiConverter {
 
 	fun swagger2api(input: OpenAPI): Api {
 		val structs = input.components.schemas.map { oneModel ->
-			val structType = typeFactory.getRefType(oneModel.key)
-			model2struct(structType, oneModel.value).also { structType.definition = it }
-
+			model2struct(oneModel.key, oneModel.value)
 		}
 		val paths = input.paths.flatMap { onePath ->
 			path2Endpoints(onePath.key, onePath.value)
@@ -105,16 +103,29 @@ class OpenApiConverter {
 		return retval
 	}
 
-	fun model2struct(type: StructTypeDescr, input: Schema<*>): Struct {
-		if (input !is ObjectSchema || input.type != "object")
-			throw NotImplementedError("not an object")
-		val requireds: List<String> = input.required ?: emptyList()
-		val fields = input.properties.map { oneField ->
-			property2field(oneField.key, oneField.value, requireds.contains(oneField.key))
+	fun model2struct(typeStr: String, input: Schema<*>): Struct {
+
+		if (input is StringSchema && input.type == "string"){
+			val type = typeFactory.getRefType(typeStr)
+			val transportType = typeFactory.getSimpleType(input.type, null)
+			val values = input.enum
+			val retval = StructEnum(type, transportType, values, input.description)
+			type.definition = retval
+			return retval
 		}
 
-		val retval = Struct(type, fields, input.description)
-		return retval
+		if (input is ObjectSchema && input.type == "object") {
+			val type = typeFactory.getRefType(typeStr)
+			val requireds: List<String> = input.required ?: emptyList()
+			val fields = input.properties.map { oneField ->
+				property2field(oneField.key, oneField.value, requireds.contains(oneField.key))
+			}
+
+			val retval = StructActual(type, fields, input.description)
+			type.definition = retval
+			return retval
+		}
+		throw NotImplementedError("unknown type")
 	}
 
 

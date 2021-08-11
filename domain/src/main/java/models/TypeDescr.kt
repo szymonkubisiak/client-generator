@@ -2,7 +2,7 @@ package models
 
 /**
  * Type descriptor.
- * Describes a unique Type that results from definition of Field or a Struct
+ * Describes a reference to an unique Type that results from definition of Field or a Struct
  */
 sealed class TypeDescr {
 	abstract val name: String
@@ -11,18 +11,17 @@ sealed class TypeDescr {
 /**
  * Describes a type that is defined by a transport format alone,
  * or a type that's derived from it.
- * Basically, anything that uses a simple type for transport
+ * Basically, anything that won't be generated as model
  * for JSON those are: string, number, integer, boolean
  */
 data class BuiltinTypeDescr internal constructor(override val name: String, var format: String?): TypeDescr()
 
 /**
- * Describes a type that is defined in a given spec.
+ * Describes a type that is defined in a given spec and has both transport and domain forms
  */
-data class StructTypeDescr (override val name: String): TypeDescr() {
+data class StructTypeDescr internal constructor (override val name: String): TypeDescr() {
 	var definition: Struct? = null
 }
-
 
 class TypeDescrFactory {
 	val uniqueTypes = HashMap<TypeDescr, TypeDescr>()

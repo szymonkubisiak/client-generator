@@ -1,36 +1,36 @@
 import Namer.adapterT2DName
-import models.StructTypeDescr
-import models.TypeDescr
-import models.TypeDescrFactory
+import models.*
 import java.lang.Exception
 
 class TypeResolver private constructor(){
 	private val typeFactory = TypeDescrFactory()
 
-	private val transportTypes = HashMap<TypeDescr, String>()
-	private val domainTypes = HashMap<TypeDescr, String>()
-	private val adaptersT2D = HashMap<TypeDescr, String>()
+	private val transportTypes = HashMap<BuiltinTypeDescr, String>()
+	private val domainTypes = HashMap<BuiltinTypeDescr, String>()
+	private val adaptersT2D = HashMap<BuiltinTypeDescr, String>()
 
-	fun resolveTransportType(t: TypeDescr): String {
-		if (t is StructTypeDescr) {
-			return t.name
-		}
+	fun resolveTransportType(t: BuiltinTypeDescr): String {
 		return transportTypes[t] ?: throw Exception("missing type")
 	}
 
-	fun resolveDomainType(t: TypeDescr): String {
-		if (t is StructTypeDescr) {
-			return t.name
+	//TODO: harmonize use with above via Namer
+	fun resolveDomainType(type: TypeDescr): String {
+		return when (type) {
+			is BuiltinTypeDescr -> domainTypes[type] ?: throw Exception("missing type")
+			is StructTypeDescr -> type.name
 		}
-		return domainTypes[t] ?: throw Exception("missing type")
 	}
 
 	fun resolveTransportToDomainConversion(type: TypeDescr): String {
-		if (type is StructTypeDescr) {
-			return "${type.adapterT2DName()}(%s)"
+		return when (type) {
+			is BuiltinTypeDescr -> adaptersT2D[type] ?: throw Exception("missing type")
+			is StructTypeDescr -> when (type.definition!!) {
+				is StructActual -> "${type.adapterT2DName()}(%s)"
+				is StructEnum -> type.name + ".valueOf(%s)"
+			}
 		}
-		return adaptersT2D[type] ?: throw Exception("missing type")
 	}
+
 
 	init {
 		//Any numbers. This type is forbidden in Kotlin, as no type can represent both floating and fixed point at the same time

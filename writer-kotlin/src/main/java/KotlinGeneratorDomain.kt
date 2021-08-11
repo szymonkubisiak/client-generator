@@ -10,6 +10,23 @@ class KotlinGeneratorDomain(pkg: PackageConfig): KotlinGeneratorBase(pkg) {
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
+		when(model){
+			is StructActual -> writeActualStruct(writer, model)
+			is StructEnum -> writeActualEnum(writer, model)
+		}
+	}
+
+	fun writeActualEnum(writer: GeneratorWriter, model: StructEnum) {
+		writer.writeLine("enum class ${model.type.domainFinalName()}{")
+		IndentedWriter(writer).use { writer ->
+			model.values.forEach {
+				writer.writeLine("$it,")
+			}
+		}
+		writer.writeLine("}")
+	}
+
+	fun writeActualStruct(writer: GeneratorWriter, model: StructActual) {
 		writer.writeLine("class ${model.type.domainFinalName()}(")
 		IndentedWriter(writer).use { writer ->
 

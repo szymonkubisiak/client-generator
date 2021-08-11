@@ -8,6 +8,13 @@ class KotlinGeneratorTransport(pkg: PackageConfig): KotlinGeneratorBase(pkg) {
 	override fun fileName(type: TypeDescr): String = type.transportFinalName()
 
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
+		when(model){
+			is StructActual -> writeActualStruct(writer, model)
+			is StructEnum -> return //enums use built-in transport types
+		}
+	}
+
+	fun writeActualStruct(writer: GeneratorWriter, model: StructActual) {
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
 		writer.writeLine("class ${model.type.transportFinalName()} {")

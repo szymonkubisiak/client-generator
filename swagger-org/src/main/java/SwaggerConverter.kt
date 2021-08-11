@@ -1,6 +1,5 @@
 import io.swagger.models.Model
 import io.swagger.models.ModelImpl
-import io.swagger.models.Swagger
 import io.swagger.models.properties.ArrayProperty
 import io.swagger.models.properties.Property
 import io.swagger.models.properties.RefProperty
@@ -28,7 +27,7 @@ class SwaggerConverter {
 			property2field(oneField.key, oneField.value)
 		}
 
-		val retval = Struct(type, fields, input.description)
+		val retval = StructActual(type, fields, input.description)
 		return retval
 	}
 

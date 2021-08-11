@@ -15,6 +15,13 @@ class KotlinGeneratorT2D(
 	override fun fileName(type: TypeDescr): String = type.adapterT2DName()
 
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
+		when (model) {
+			is StructActual -> writeActualStruct(writer, model)
+			is StructEnum -> return
+		}
+	}
+
+	fun writeActualStruct(writer: GeneratorWriter, model: StructActual) {
 		writeImports(writer)
 		val transportTypeName = model.type.transportFinalName()
 		val domainTypeName = model.type.domainFinalName()

@@ -10,7 +10,11 @@ object Namer {
 	fun TypeDescr.adapterT2DName() = getAdapterT2DName(this.name)
 	fun TypeDescr.transportFinalName(): String {
 		return when (this) {
-			is StructTypeDescr -> TypeResolver.instance.resolveTransportType(this) + "Pojo"
+			is StructTypeDescr ->
+				when (val definition = this.definition!!) {
+					is StructActual -> this.name + "Pojo"
+					is StructEnum -> TypeResolver.instance.resolveTransportType(definition.transportType)
+				}
 			is BuiltinTypeDescr -> TypeResolver.instance.resolveTransportType(this)
 		}
 	}
