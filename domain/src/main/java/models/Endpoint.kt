@@ -23,5 +23,6 @@ class Param(
 		object QUERY : Location()
 		data class BODY(val mediaType: String) : Location()
 		object HEADER : Location()
+		object COOKIE : Location()
 	}
 }
