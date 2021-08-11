@@ -5,7 +5,7 @@ package models
  * Describes a unique Type that results from definition of Field or a Struct
  */
 sealed class TypeDescr {
-	abstract val transportName: String
+	abstract val name: String
 }
 
 /**
@@ -14,12 +14,12 @@ sealed class TypeDescr {
  * Basically, anything that uses a simple type for transport
  * for JSON those are: string, number, integer, boolean
  */
-data class BuiltinTypeDescr internal constructor(override val transportName: String, var format: String?): TypeDescr()
+data class BuiltinTypeDescr internal constructor(override val name: String, var format: String?): TypeDescr()
 
 /**
  * Describes a type that is defined in a given spec.
  */
-data class StructTypeDescr (override val transportName: String): TypeDescr() {
+data class StructTypeDescr (override val name: String): TypeDescr() {
 	var definition: Struct? = null
 }
 

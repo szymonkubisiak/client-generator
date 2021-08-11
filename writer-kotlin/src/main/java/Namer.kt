@@ -7,7 +7,7 @@ object Namer {
 	private const val T2DAdapterTemplate = "%sTransportToDomainConverter"
 	private fun getAdapterT2DName(name: String) = T2DAdapterTemplate.format(name)
 
-	fun TypeDescr.adapterT2DName() = getAdapterT2DName(this.transportName)
+	fun TypeDescr.adapterT2DName() = getAdapterT2DName(this.name)
 	fun TypeDescr.transportFinalName(): String {
 		return when (this) {
 			is StructTypeDescr -> TypeResolver.instance.resolveTransportType(this) + "Pojo"
@@ -15,7 +15,7 @@ object Namer {
 		}
 	}
 
-	fun TypeDescr.domainFinalName() = this.transportName// + "Dom"
+	fun TypeDescr.domainFinalName() = this.name// + "Dom"
 
 	fun Endpoint.serviceClassName() = this.name.capitalize() + "Service"
 	fun Endpoint.serviceMethodName() = this.name.decapitalize() + "Service"

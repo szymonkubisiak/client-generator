@@ -13,14 +13,14 @@ class TypeResolver private constructor(){
 
 	fun resolveTransportType(t: TypeDescr): String {
 		if (t is StructTypeDescr) {
-			return t.transportName
+			return t.name
 		}
 		return transportTypes[t] ?: throw Exception("missing type")
 	}
 
 	fun resolveDomainType(t: TypeDescr): String {
 		if (t is StructTypeDescr) {
-			return t.transportName
+			return t.name
 		}
 		return domainTypes[t] ?: throw Exception("missing type")
 	}
