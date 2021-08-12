@@ -51,7 +51,7 @@ object Main {
 
 	private fun writeSampleToOut(api: Api) {
 		val outWriter = PrintWriter(System.out)
-		api.structs.firstOrNull { it.type.name == "BasicTypes" }?.also {
+		api.structs.firstOrNull { it.type.key == "BasicTypes" }?.also {
 			kotlinT.writeStruct(BaseWriter(outWriter), it)
 			kotlinD.writeStruct(BaseWriter(outWriter), it)
 			kotlinT2D.writeStruct(BaseWriter(outWriter), it)

@@ -17,7 +17,7 @@ class TypeResolver private constructor(){
 	fun resolveDomainType(type: TypeDescr): String {
 		return when (type) {
 			is BuiltinTypeDescr -> domainTypes[type] ?: throw Exception("missing type")
-			is StructTypeDescr -> type.name
+			is StructTypeDescr -> type.key
 		}
 	}
 
@@ -26,7 +26,7 @@ class TypeResolver private constructor(){
 			is BuiltinTypeDescr -> adaptersT2D[type] ?: throw Exception("missing type")
 			is StructTypeDescr -> when (type.definition!!) {
 				is StructActual -> "${type.adapterT2DName()}(%s)"
-				is StructEnum -> type.name + ".valueOf(%s)"
+				is StructEnum -> type.key + ".valueOf(%s)"
 			}
 		}
 	}
