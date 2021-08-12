@@ -10,14 +10,19 @@ import models.*
 class OpenApiConverter {
 
 	private val typeFactory = TypeDescrFactory()
+	private lateinit var securityDefs : List<Security>
 
 	fun swagger2api(input: OpenAPI): Api {
 		val structs = input.components.schemas.map { oneModel ->
 			model2struct(oneModel.key, oneModel.value)
 		}
+		securityDefs = input.components.securitySchemes.map {
+			Security(it.key, parseLocation(it.value.`in`.toString()))
+		}
 		val paths = input.paths.flatMap { onePath ->
 			path2Endpoints(onePath.key, onePath.value)
 		}
+
 		val retval = Api(structs, paths)
 		return retval
 	}
@@ -29,7 +34,9 @@ class OpenApiConverter {
 	fun operation2Endpoint(path: String, operation: String, input: Operation): Endpoint {
 		val ap: ApiResponse? = input.responses?.get("200")
 		val response = ap?.content?.let(::pickOneContent)
-		val security = input.security?.flatMap { it.keys }
+		val security = input.security
+			?.flatMap { it.keys }
+			?.map { key -> securityDefs.first { it.key == key } }
 
 		return Endpoint(
 			input.operationId,
@@ -84,14 +91,7 @@ class OpenApiConverter {
 	}
 
 	fun parameter2Param(input: Parameter): Param? {
-		val location = when (input.`in`) {
-			"path" -> Param.Location.PATH
-			"query" -> Param.Location.QUERY
-			"body" -> throw IllegalArgumentException("BODY argument defined in unexpected place")
-			"header" -> Param.Location.HEADER
-			"cookie" -> return null
-			else -> throw IllegalArgumentException("Unrecognized REST operation parameter location: " + input.`in`)
-		}
+		val location = parseLocation(input.`in`)
 		val retval = Param(
 			transportName = input.name,
 			type = resolveType(input.schema),
@@ -101,6 +101,17 @@ class OpenApiConverter {
 			location = location
 		)
 		return retval
+	}
+
+	private fun parseLocation(_in: String): Param.Location {
+		return when (_in) {
+			"path" -> Param.Location.PATH
+			"query" -> Param.Location.QUERY
+			"body" -> throw IllegalArgumentException("BODY argument defined in unexpected place")
+			"header" -> Param.Location.HEADER
+			"cookie" -> Param.Location.COOKIE
+			else -> throw IllegalArgumentException("Unrecognized parameter location: $_in")
+		}
 	}
 
 	fun model2struct(typeStr: String, input: Schema<*>): Struct {

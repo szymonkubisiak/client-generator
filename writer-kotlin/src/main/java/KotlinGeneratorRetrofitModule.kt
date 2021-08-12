@@ -46,7 +46,7 @@ class KotlinGeneratorRetrofitModule(
 
 		val serviceName = endpoint.serviceClassName()
 
-		endpoint.security?.also { writer.writeLine("//security: " + it.joinToString()) }
+		endpoint.security?.also { writer.writeLine("//security: " + it.joinToString { it.key }) }
 		writer.writeLine("@Provides")
 		writer.writeLine("fun provide$serviceName(wrapper: RetrofitProvider): $serviceName = provideService(wrapper)")
 		writer.writeLine("")
