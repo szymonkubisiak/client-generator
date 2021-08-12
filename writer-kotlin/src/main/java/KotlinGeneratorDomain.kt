@@ -5,7 +5,7 @@ import utils.PackageConfig
 @Suppress("NAME_SHADOWING")
 class KotlinGeneratorDomain(pkg: PackageConfig): KotlinGeneratorBase(pkg) {
 
-	override fun fileName(type: TypeDescr): String = type.domainFinalName()
+	override fun fileName(type: StructTypeDescr): String = type.domainFinalName()
 
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
 		writer.writeLine("package " + pkg.toPackage())
@@ -43,7 +43,7 @@ class KotlinGeneratorDomain(pkg: PackageConfig): KotlinGeneratorBase(pkg) {
 //		}
 
 		val name = field.transportName
-		var type = typeResolver.resolveDomainType(field.type)
+		var type = field.type.domainFinalName()
 		if (field.isArray)
 			type = "List<$type>"
 		if (!field.mandatory)

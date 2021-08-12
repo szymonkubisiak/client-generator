@@ -1,5 +1,5 @@
-import Namer.adapterT2DName
-import models.*
+import models.BuiltinTypeDescr
+import models.TypeDescrFactory
 import java.lang.Exception
 
 class TypeResolver private constructor(){
@@ -13,24 +13,13 @@ class TypeResolver private constructor(){
 		return transportTypes[t] ?: throw Exception("missing type")
 	}
 
-	//TODO: harmonize use with above via Namer
-	fun resolveDomainType(type: TypeDescr): String {
-		return when (type) {
-			is BuiltinTypeDescr -> domainTypes[type] ?: throw Exception("missing type")
-			is StructTypeDescr -> type.key
-		}
+	fun resolveDomainType(type: BuiltinTypeDescr): String {
+		return domainTypes[type] ?: throw Exception("missing type")
 	}
 
-	fun resolveTransportToDomainConversion(type: TypeDescr): String {
-		return when (type) {
-			is BuiltinTypeDescr -> adaptersT2D[type] ?: throw Exception("missing type")
-			is StructTypeDescr -> when (type.definition!!) {
-				is StructActual -> "${type.adapterT2DName()}(%s)"
-				is StructEnum -> type.key + ".valueOf(%s)"
-			}
-		}
+	fun resolveTransportToDomainConversion(type: BuiltinTypeDescr): String {
+		return adaptersT2D[type] ?: throw Exception("missing type")
 	}
-
 
 	init {
 		//Any numbers. This type is forbidden in Kotlin, as no type can represent both floating and fixed point at the same time

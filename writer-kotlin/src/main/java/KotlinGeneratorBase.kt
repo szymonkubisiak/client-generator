@@ -8,14 +8,18 @@ abstract class KotlinGeneratorBase(
 ) {
 	abstract fun writeStruct(writer: GeneratorWriter, model: Struct)
 	abstract fun writeField(writer: GeneratorWriter, field: Field)
-	abstract fun fileName(type: TypeDescr): String
+	abstract fun fileName(type: StructTypeDescr): String
+	open fun isWriteable(type: Struct) = true
 
 
-	fun writeStructs(models: List<Struct>) {
+	open fun writeStructs(models: List<Struct>) {
 		val directory = pkg.toDir()
 		Utils.createDirectories(directory)
 		Utils.cleanupDirectory(directory)
 		models.forEach { struct ->
+			if (!isWriteable(struct)) {
+				return@forEach
+			}
 			PrintWriter("$directory/${fileName(struct.type)}.kt").use { writer ->
 				writeStruct(BaseWriter(writer), struct)
 				writer.flush()

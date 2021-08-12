@@ -3,12 +3,15 @@ import models.*
 import utils.PackageConfig
 
 @Suppress("NAME_SHADOWING")
-class KotlinGeneratorTransport(pkg: PackageConfig): KotlinGeneratorBase(pkg) {
+class KotlinGeneratorTransport(pkg: PackageConfig) : KotlinGeneratorBase(pkg) {
 
-	override fun fileName(type: TypeDescr): String = type.transportFinalName()
+	override fun fileName(type: StructTypeDescr): String = type.transportFinalName()
+	override fun isWriteable(type: Struct): Boolean {
+		return type !is StructEnum
+	}
 
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
-		when(model){
+		when (model) {
 			is StructActual -> writeActualStruct(writer, model)
 			is StructEnum -> return //enums use built-in transport types
 		}

@@ -19,7 +19,14 @@ object Namer {
 		}
 	}
 
-	fun TypeDescr.domainFinalName() = this.key// + "Dom"
+	fun StructTypeDescr.domainFinalName() = this.key// + "Dom"
+
+	fun TypeDescr.domainFinalName():String {
+		return when (this) {
+			is BuiltinTypeDescr -> TypeResolver.instance.resolveDomainType(this)
+			is StructTypeDescr -> this.domainFinalName()
+		}
+	}
 
 	fun Endpoint.serviceClassName() = this.name.capitalize() + "Service"
 	fun Endpoint.serviceMethodName() = this.name.decapitalize() + "Service"

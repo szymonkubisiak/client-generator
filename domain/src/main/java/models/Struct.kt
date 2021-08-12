@@ -1,7 +1,7 @@
 package models
 
 sealed class Struct {
-	abstract val type: TypeDescr
+	abstract val type: StructTypeDescr
 }
 
 class StructActual (

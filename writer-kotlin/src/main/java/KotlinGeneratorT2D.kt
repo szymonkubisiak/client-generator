@@ -12,7 +12,10 @@ class KotlinGeneratorT2D(
 	val domain: PackageConfig,
 ) : KotlinGeneratorBase(pkg) {
 
-	override fun fileName(type: TypeDescr): String = type.adapterT2DName()
+	override fun fileName(type: StructTypeDescr): String = type.adapterT2DName()
+	override fun isWriteable(type: Struct): Boolean {
+		return type !is StructEnum
+	}
 
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
 		when (model) {
@@ -42,7 +45,7 @@ class KotlinGeneratorT2D(
 	override fun writeField(writer: GeneratorWriter, field: Field) {
 		val name = field.transportName
 		// val type = typeResolver.resolveTransportType(field.type)
-		val conversion = typeResolver.resolveTransportToDomainConversion(field.type)
+		val conversion = resolveTransportToDomainConversion(field.type)
 		val conversionIt = conversion.format("it")
 
 		var expression = "input.$name"
@@ -68,5 +71,17 @@ class KotlinGeneratorT2D(
 		writer.writeLine("import " + conn.toPackage() + ".*")
 		writer.writeLine("import " + domain.toPackage() + ".*")
 		writer.writeLine("")
+	}
+
+	companion object {
+		fun resolveTransportToDomainConversion(type: TypeDescr): String {
+			return when (type) {
+				is BuiltinTypeDescr -> TypeResolver.instance.resolveTransportToDomainConversion(type)
+				is StructTypeDescr -> when (type.definition!!) {
+					is StructActual -> "${type.adapterT2DName()}(%s)"
+					is StructEnum -> type.key + ".valueOf(%s)"
+				}
+			}
+		}
 	}
 }
