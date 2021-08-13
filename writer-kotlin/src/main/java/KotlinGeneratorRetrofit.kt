@@ -74,7 +74,7 @@ class KotlinGeneratorRetrofit(
 			when (this) {
 				Param.Location.PATH -> "Path(\"$name\")"
 				Param.Location.QUERY -> "Query(\"$name\")"
-				is Param.Location.BODY -> "Body()"
+				is Param.Location.BODY -> "Body"
 				Param.Location.HEADER -> "Header(\"$name\")"
 				Param.Location.COOKIE -> "Header(\"Cookie\")"
 			}
