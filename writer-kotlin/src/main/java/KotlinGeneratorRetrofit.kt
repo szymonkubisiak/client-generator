@@ -35,15 +35,25 @@ class KotlinGeneratorRetrofit(
 		writer.writeLine("import retrofit2.http.*")
 		writer.writeLine("")
 
-		endpoint.security?.also { writer.writeLine("//security: " + it.joinToString { it.key }) }
 		writer.writeLine("interface " + endpoint.serviceClassName() + " {")
 		IndentedWriter(writer).use { writer ->
 			writer.writeLine("@" + endpoint.retrofitAnnotation() + "(\"" + endpoint.path.trimStart('/') + "\")")
 			writer.writeLine("fun " + endpoint.serviceMethodName() + "(")
 			IndentedWriter(writer).use { writer ->
+				endpoint.security?.also {
+					for (security in it) {
+						val name = Namer.kotlinizeVariableName(security.key)
+						val location = security.location.retrofitAnnotation(name)
+						val type = "String"
+						if(endpoint.params.any { param -> param.transportName == security.key}){
+							writer.writeLine("//WARNING: security clashes with param:")
+							writer.writeLine("//@$location $name: $type,")
+						} else {
+							writer.writeLine("@$location $name: $type,")
+						}
+					}
+				}
 				for (param in endpoint.params) {
-
-
 					val name = param.transportName
 					val location = param.location.retrofitAnnotation(name)
 					val type = param.type.transportFinalName()

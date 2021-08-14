@@ -30,4 +30,9 @@ object Namer {
 
 	fun Endpoint.serviceClassName() = this.name.capitalize() + "Service"
 	fun Endpoint.serviceMethodName() = this.name.decapitalize() + "Service"
+
+	fun kotlinizeVariableName(name: String) = if(isValidVariableName(name)) name else "`$name`"
+	fun isValidVariableName(name: String) = name.matches(variableNameRegex)
+
+	private val variableNameRegex = "^[a-zA-Z_$][a-zA-Z_$0-9]*$".toRegex()
 }
