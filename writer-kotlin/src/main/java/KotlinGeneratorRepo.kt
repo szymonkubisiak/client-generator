@@ -61,7 +61,7 @@ class KotlinGeneratorRepo(
 		writer.writeLine("}")
 	}
 
-	private fun writeEndpointMethod(writer: IndentedWriter, endpoint: Endpoint): Any {
+	private fun writeEndpointMethod(writer: IndentedWriter, endpoint: Endpoint) {
 		writer.writeLine("")
 
 		writer.writeLine("fun " + endpoint.repoMethodName() + "(")
@@ -75,7 +75,7 @@ class KotlinGeneratorRepo(
 				writer.writeLine("$name: $type,")
 			}
 		}
-		return endpoint.response?.also {
+		endpoint.response?.also {
 			val rawType = it.type.domainFinalName()
 			val type = if (!it.isArray) rawType else "List<$rawType>"
 			writer.writeLine("): Single<$type>")
