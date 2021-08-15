@@ -3,6 +3,7 @@ import Namer.serviceMethodName
 import Namer.transportFinalName
 import models.Endpoint
 import models.Param
+import models.Tag
 import utils.PackageConfig
 import java.io.PrintWriter
 
@@ -13,6 +14,7 @@ class KotlinGeneratorRetrofit(
 ) {
 
 	fun fileName(endpoint: Endpoint): String = endpoint.serviceClassName()
+	fun fileName(tag: Tag): String = tag.serviceClassName()
 
 	fun writeEndpoits(input: List<Endpoint>) {
 		val directory = pkg.toDir()
@@ -21,7 +23,7 @@ class KotlinGeneratorRetrofit(
 
 		val tags = input.flatMap { it.tags }.distinct()
 		tags.forEach { tag ->
-			PrintWriter("$directory/${tag.serviceClassName()}.kt").use { writer ->
+			PrintWriter("$directory/${fileName(tag)}.kt").use { writer ->
 				writeEndpointInternal(BaseWriter(writer), tag.serviceClassName(), input.filter { it.tags.contains(tag) })
 				writer.flush()
 			}
@@ -34,7 +36,6 @@ class KotlinGeneratorRetrofit(
 				writer.flush()
 			}
 		}
-
 	}
 
 	fun writeEndpoint(writer: GeneratorWriter, endpoint: Endpoint) {

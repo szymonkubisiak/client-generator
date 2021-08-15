@@ -32,6 +32,10 @@ object Namer {
 	fun Endpoint.serviceClassName() = this.name.capitalize() + "Service"
 	fun Endpoint.serviceMethodName() = this.name.decapitalize()
 
+	fun Tag.repoClassName() = this.key.capitalize() + "Repo"
+	fun Endpoint.repoClassName() = this.name.capitalize() + "Repo"
+	fun Endpoint.repoMethodName() = this.name.decapitalize()
+
 	fun kotlinizeVariableName(name: String) = if(isValidVariableName(name)) name else "`$name`"
 	fun isValidVariableName(name: String) = name.matches(variableNameRegex)
 
