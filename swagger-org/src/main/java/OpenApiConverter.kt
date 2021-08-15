@@ -41,7 +41,7 @@ class OpenApiConverter {
 		return Endpoint(
 			input.operationId,
 			path,
-			input.tags,
+			input.tags.map(::Tag),
 			operation,
 			(input.parameters?.mapNotNull(::parameter2Param) ?: emptyList()) + (input.requestBody?.let(::body2Param)
 				?: emptyList()),

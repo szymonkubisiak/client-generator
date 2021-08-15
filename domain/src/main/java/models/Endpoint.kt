@@ -3,7 +3,7 @@ package models
 class Endpoint(
 	val name: String,
 	val path: String,
-	val tags: List<String>,
+	val tags: List<Tag>,
 	val operation: String,
 	val params: List<Param>,
 	val response: Field?, //TODO: create a better suiting type

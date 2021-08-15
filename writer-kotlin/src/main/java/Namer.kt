@@ -28,6 +28,7 @@ object Namer {
 		}
 	}
 
+	fun Tag.serviceClassName() = this.key.capitalize() + "Service"
 	fun Endpoint.serviceClassName() = this.name.capitalize() + "Service"
 	fun Endpoint.serviceMethodName() = this.name.decapitalize()
 

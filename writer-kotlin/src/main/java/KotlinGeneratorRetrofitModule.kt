@@ -30,9 +30,15 @@ class KotlinGeneratorRetrofitModule(
 			writer.writeLine("class $className {")
 
 			IndentedWriter(writer).use { writer ->
-				input.forEach { one ->
-					writeEndpoint(writer, one)
+				val tags = input.flatMap { it.tags }.distinct()
+				tags.forEach { tag ->
+					writeEndpoint(writer, tag.serviceClassName())
 				}
+
+				input.filter { it.tags.isNullOrEmpty() }
+					.forEach { one ->
+						writeEndpoint(writer, one.serviceClassName())
+					}
 
 				writer.writeLine("private inline fun <reified S> provideService(wrapper: RetrofitProvider) = wrapper.provide().create(S::class.java)")
 			}
@@ -42,11 +48,8 @@ class KotlinGeneratorRetrofitModule(
 		}
 	}
 
-	fun writeEndpoint(writer: GeneratorWriter, endpoint: Endpoint) {
+	fun writeEndpoint(writer: GeneratorWriter, serviceName: String) {
 
-		val serviceName = endpoint.serviceClassName()
-
-		endpoint.security?.also { writer.writeLine("//security: " + it.joinToString { it.key }) }
 		writer.writeLine("@Provides")
 		writer.writeLine("fun provide$serviceName(wrapper: RetrofitProvider): $serviceName = provideService(wrapper)")
 		writer.writeLine("")

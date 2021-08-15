@@ -18,15 +18,30 @@ class KotlinGeneratorRetrofit(
 		val directory = pkg.toDir()
 		Utils.createDirectories(directory)
 		Utils.cleanupDirectory(directory)
-		input.forEach { one ->
+
+		val tags = input.flatMap { it.tags }.distinct()
+		tags.forEach { tag ->
+			PrintWriter("$directory/${tag.serviceClassName()}.kt").use { writer ->
+				writeEndpointInternal(BaseWriter(writer), tag.serviceClassName(), input.filter { it.tags.contains(tag) })
+				writer.flush()
+			}
+		}
+
+		input.filter { it.tags.isNullOrEmpty() }
+			.forEach { one ->
 			PrintWriter("$directory/${fileName(one)}.kt").use { writer ->
 				writeEndpoint(BaseWriter(writer), one)
 				writer.flush()
 			}
 		}
+
 	}
 
 	fun writeEndpoint(writer: GeneratorWriter, endpoint: Endpoint) {
+		writeEndpointInternal(writer, endpoint.serviceClassName(), listOf(endpoint))
+	}
+
+	fun writeEndpointInternal(writer: GeneratorWriter, serviceClassName: String, endpoints: List<Endpoint>) {
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
 		writer.writeLine("import io.reactivex.Single")
@@ -35,48 +50,54 @@ class KotlinGeneratorRetrofit(
 		writer.writeLine("import retrofit2.http.*")
 		writer.writeLine("")
 
-		writer.writeLine("interface " + endpoint.serviceClassName() + " {")
+		writer.writeLine("interface " + serviceClassName + " {")
 		IndentedWriter(writer).use { writer ->
-			writer.writeLine("@" + endpoint.retrofitAnnotation() + "(\"" + endpoint.path.trimStart('/') + "\")")
-			writer.writeLine("fun " + endpoint.serviceMethodName() + "(")
-			IndentedWriter(writer).use { writer ->
-				endpoint.security?.also {
-					for (security in it) {
-						val name = Namer.kotlinizeVariableName(security.key)
-						val location = security.location.retrofitAnnotation(name)
-						val type = "String"
-						if(endpoint.params.any { param -> param.transportName == security.key}){
-							writer.writeLine("//WARNING: security clashes with param:")
-							writer.writeLine("//@$location $name: $type,")
-						} else {
-							writer.writeLine("@$location $name: $type,")
-						}
-					}
-				}
-				for (param in endpoint.params) {
-					val name = param.transportName
-					val location = param.location.retrofitAnnotation(name)
-					val type = param.type.transportFinalName()
-
-					writer.writeLine("@$location $name: $type,")
-
-					(param.location as? Param.Location.BODY)?.mediaType?.also {
-						if (it.contains("form")) {
-							writer.writeLine("//TODO: MediaType: " + it)
-						}
-					}
-				}
+			endpoints.forEach { endpoint ->
+				writeEndpointMethod(writer, endpoint)
 			}
-			endpoint.response?.also {
-				val rawType = it.type.transportFinalName()
-				val type = if (!it.isArray) rawType else "List<$rawType>"
-				writer.writeLine("): Single<$type>")
-			} ?: run {
-				writer.writeLine("): Completable")
-			}
-
 		}
 		writer.writeLine("}")
+	}
+
+	private fun writeEndpointMethod(writer: IndentedWriter, endpoint: Endpoint): Any {
+		writer.writeLine("")
+		writer.writeLine("@" + endpoint.retrofitAnnotation() + "(\"" + endpoint.path.trimStart('/') + "\")")
+		writer.writeLine("fun " + endpoint.serviceMethodName() + "(")
+		IndentedWriter(writer).use { writer ->
+			endpoint.security?.also {
+				for (security in it) {
+					val name = Namer.kotlinizeVariableName(security.key)
+					val location = security.location.retrofitAnnotation(name)
+					val type = "String"
+					if (endpoint.params.any { param -> param.transportName == security.key }) {
+						writer.writeLine("//WARNING: security clashes with param:")
+						writer.writeLine("//@$location $name: $type,")
+					} else {
+						writer.writeLine("@$location $name: $type,")
+					}
+				}
+			}
+			for (param in endpoint.params) {
+				val name = param.transportName
+				val location = param.location.retrofitAnnotation(name)
+				val type = param.type.transportFinalName()
+
+				writer.writeLine("@$location $name: $type,")
+
+				(param.location as? Param.Location.BODY)?.mediaType?.also {
+					if (it.contains("form")) {
+						writer.writeLine("//TODO: MediaType: " + it)
+					}
+				}
+			}
+		}
+		return endpoint.response?.also {
+			val rawType = it.type.transportFinalName()
+			val type = if (!it.isArray) rawType else "List<$rawType>"
+			writer.writeLine("): Single<$type>")
+		} ?: run {
+			writer.writeLine("): Completable")
+		}
 	}
 
 	companion object {
