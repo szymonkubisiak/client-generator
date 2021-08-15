@@ -3,6 +3,7 @@ import Namer.transportFinalName
 import Namer.adapterT2DName
 import models.*
 import utils.PackageConfig
+import java.io.PrintWriter
 import java.io.Writer
 
 @Suppress("NAME_SHADOWING")
@@ -71,6 +72,21 @@ class KotlinGeneratorT2D(
 		writer.writeLine("import " + conn.toPackage() + ".*")
 		writer.writeLine("import " + domain.toPackage() + ".*")
 		writer.writeLine("")
+	}
+
+	override fun writeExtras(directory: String) {
+		PrintWriter("$directory/MandatoryIsNullException.kt").use { writer ->
+			writeMandatoryIsNullException(BaseWriter(writer))
+			writer.flush()
+		}
+	}
+
+	private fun writeMandatoryIsNullException(writer: GeneratorWriter) {
+		writer.writeLine("package " + pkg.toPackage())
+		writer.writeLine("")
+		writer.writeLine("import java.lang.Exception")
+		writer.writeLine("")
+		writer.writeLine("class MandatoryIsNullException(fieldName: String): Exception(\"Mandatory field \$fieldName is null\")")
 	}
 
 	companion object {

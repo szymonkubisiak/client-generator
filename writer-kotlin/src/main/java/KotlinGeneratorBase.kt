@@ -10,6 +10,7 @@ abstract class KotlinGeneratorBase(
 	abstract fun writeField(writer: GeneratorWriter, field: Field)
 	abstract fun fileName(type: StructTypeDescr): String
 	open fun isWriteable(type: Struct) = true
+	open fun writeExtras(directory: String) {}
 
 
 	open fun writeStructs(models: List<Struct>) {
@@ -25,5 +26,6 @@ abstract class KotlinGeneratorBase(
 				writer.flush()
 			}
 		}
+		writeExtras(directory)
 	}
 }
