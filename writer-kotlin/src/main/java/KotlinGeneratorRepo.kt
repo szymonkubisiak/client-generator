@@ -25,7 +25,7 @@ class KotlinGeneratorRepo(
 			PrintWriter("$directory/${fileName(tag)}.kt").use { writer ->
 				writeEndpointInternal(
 					BaseWriter(writer),
-					tag.repoClassName(),
+					tag,
 					input.filter { it.tags.contains(tag) })
 				writer.flush()
 			}
@@ -41,10 +41,10 @@ class KotlinGeneratorRepo(
 	}
 
 	fun writeEndpoint(writer: GeneratorWriter, endpoint: Endpoint) {
-		writeEndpointInternal(writer, endpoint.repoClassName(), listOf(endpoint))
+		writeEndpointInternal(writer, endpoint, listOf(endpoint))
 	}
 
-	fun writeEndpointInternal(writer: GeneratorWriter, repoClassName: String, endpoints: List<Endpoint>) {
+	fun writeEndpointInternal(writer: GeneratorWriter, repoClassName: EndpointGroup, endpoints: List<Endpoint>) {
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
 		writer.writeLine("import io.reactivex.Single")
@@ -52,7 +52,7 @@ class KotlinGeneratorRepo(
 		writer.writeLine("import " + domain.toPackage() + ".*")
 		writer.writeLine("")
 
-		writer.writeLine("interface " + repoClassName + " {")
+		writer.writeLine("interface " + repoClassName.repoClassName() + " {")
 		IndentedWriter(writer).use { writer ->
 			endpoints.forEach { endpoint ->
 				writeEndpointMethod(writer, endpoint)

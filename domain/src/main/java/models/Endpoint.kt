@@ -9,7 +9,9 @@ class Endpoint(
 	val response: Field?, //TODO: create a better suiting type
 	val mediaType: String?,
 	val security: List<Security>?,
-)
+) : EndpointGroup {
+	override val key = name
+}
 
 class Param(
 	override val transportName: String,
