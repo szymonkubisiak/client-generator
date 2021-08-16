@@ -92,7 +92,14 @@ class KotlinGeneratorRepoImpl(
 		}
 		IndentedWriter(writer).use { writer ->
 			writer.writeLine("return http." + endpoint.repoMethodName() + "(")
-			//TODO: params go here
+
+			IndentedWriter(writer).use { writer ->
+				for (param in endpoint.params) {
+					val name = param.transportName
+					writer.writeLine("$name,")
+				}
+			}
+
 			writer.writeLine(")")
 			endpoint.response?.also { field ->
 				val conversionIt = KotlinGeneratorT2D.resolveTransportToDomainConversion(field.type).format("it")
