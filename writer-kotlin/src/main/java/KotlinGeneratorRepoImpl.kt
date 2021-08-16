@@ -1,4 +1,5 @@
 import Namer.domainFinalName
+import Namer.kotlinizeVariableName
 import Namer.repoClassName
 import Namer.repoMethodName
 import Namer.serviceClassName
@@ -72,17 +73,21 @@ class KotlinGeneratorRepoImpl(
 	private fun writeEndpointMethod(writer: IndentedWriter, endpoint: Endpoint) {
 		writer.writeLine("")
 
-		writer.writeLine("override fun " + endpoint.repoMethodName() + "(")
-		IndentedWriter(writer).use { writer ->
-
-			for (param in endpoint.params) {
-				val name = param.transportName
-
-				val type = param.type.domainFinalName()
-
-				writer.writeLine("$name: $type,")
+		if (endpoint.security.isNullOrEmpty()) {
+			writer.writeLine("override fun " + endpoint.repoMethodName() + "(")
+		} else {
+			writeEndpointMethodWrapper(writer, endpoint)
+			writer.writeLine("private fun " + endpoint.repoMethodName() + "Internal(")
+			IndentedWriter(writer).use { writer ->
+				for (security in endpoint.security ?: emptyList()) {
+					val name = kotlinizeVariableName(security.key)
+					val type = "String"
+					writer.writeLine("$name: $type,")
+				}
 			}
 		}
+
+		writeParams(writer, endpoint.params)
 		endpoint.response?.also {
 			val rawType = it.type.domainFinalName()
 			val type = if (!it.isArray) rawType else "List<$rawType>"
@@ -94,6 +99,11 @@ class KotlinGeneratorRepoImpl(
 			writer.writeLine("return http." + endpoint.repoMethodName() + "(")
 
 			IndentedWriter(writer).use { writer ->
+				for (security in endpoint.security ?: emptyList()) {
+					val name = kotlinizeVariableName(security.key)
+					val type = "String"
+					writer.writeLine("$name,")
+				}
 				for (param in endpoint.params) {
 					val name = param.transportName
 					writer.writeLine("$name,")
@@ -115,5 +125,32 @@ class KotlinGeneratorRepoImpl(
 			}
 		}
 		writer.writeLine("}")
+	}
+
+	private fun writeEndpointMethodWrapper(writer: IndentedWriter, endpoint: Endpoint) {
+		writer.writeLine("override fun " + endpoint.repoMethodName() + "(")
+		writeParams(writer, endpoint.params)
+		endpoint.response?.also {
+			val rawType = it.type.domainFinalName()
+			val type = if (!it.isArray) rawType else "List<$rawType>"
+			writer.writeLine("): Single<$type> {")
+		} ?: run {
+			writer.writeLine("): Completable {")
+		}
+		IndentedWriter(writer).use { writer ->
+			writer.writeLine("return jwt.executeWithJwt(::" + endpoint.repoMethodName() + "Internal)")
+		}
+		writer.writeLine("}")
+		writer.writeLine("")
+	}
+
+	private fun writeParams(writer: IndentedWriter, params: List<Param>) {
+		IndentedWriter(writer).use { writer ->
+			for (param in params) {
+				val name = param.transportName
+				val type = param.type.domainFinalName()
+				writer.writeLine("$name: $type,")
+			}
+		}
 	}
 }

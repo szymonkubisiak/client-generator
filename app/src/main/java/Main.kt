@@ -17,6 +17,7 @@ object Main {
 	val kotlinRetrofit: KotlinGeneratorRetrofit
 	val kotlinRetrofitModule: KotlinGeneratorRetrofitModule
 	val kotlinGeneratorRepo: KotlinGeneratorRepo
+	val kotlinGeneratorRepoImpl: KotlinGeneratorRepoImpl
 
 	init {
 		//TODO: move those to some config
@@ -39,6 +40,9 @@ object Main {
 
 		val repo = master.copy(module = Package("domain"), suffix = Package(generatedPrefix, "repos"))
 		kotlinGeneratorRepo = KotlinGeneratorRepo(repo, domain)
+
+		val repoImpl = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "repos"))
+		kotlinGeneratorRepoImpl = KotlinGeneratorRepoImpl(repoImpl, retrofit, t2d, domain, repo)
 	}
 
 	@JvmStatic
