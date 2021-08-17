@@ -18,6 +18,7 @@ object Main {
 	val kotlinRetrofitModule: KotlinGeneratorRetrofitModule
 	val kotlinGeneratorRepo: KotlinGeneratorRepo
 	val kotlinGeneratorRepoImpl: KotlinGeneratorRepoImpl
+	val kotlinGeneratorUsecase: KotlinGeneratorUsecase
 
 	init {
 		//TODO: move those to some config
@@ -43,6 +44,9 @@ object Main {
 
 		val repoImpl = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "repos"))
 		kotlinGeneratorRepoImpl = KotlinGeneratorRepoImpl(repoImpl, retrofit, t2d, domain, repo)
+
+		val usecases = master.copy(module = Package("domain"), suffix = Package(generatedPrefix, "usecases"))
+		kotlinGeneratorUsecase = KotlinGeneratorUsecase(usecases, domain)
 	}
 
 	@JvmStatic
@@ -74,6 +78,8 @@ object Main {
 		kotlinRetrofit.writeEndpoits(api.paths)
 		kotlinRetrofitModule.writeEndpoints(api.paths)
 		kotlinGeneratorRepo.writeEndpoits(api.paths)
+		//kotlinGeneratorRepoImpl.writeEndpoits(api.paths)
+		kotlinGeneratorUsecase.writeEndpoits(api.paths)
 	}
 
 	private fun parseAndPrepareSwagger(path: String): Swagger {

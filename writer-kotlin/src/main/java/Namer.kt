@@ -34,6 +34,9 @@ object Namer {
 	fun EndpointGroup.repoClassName() = this.key.capitalize() + "Repo"
 	fun EndpointGroup.repoMethodName() = this.key.decapitalize()
 
+	fun EndpointGroup.usecaseClassName() = this.key.capitalize() + "UC"
+	fun EndpointGroup.usecaseMethodName() = this.key.decapitalize()
+
 	fun kotlinizeVariableName(name: String) = if(isValidVariableName(name)) name else "`$name`"
 	fun isValidVariableName(name: String) = name.matches(variableNameRegex)
 
