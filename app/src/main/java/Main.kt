@@ -19,6 +19,7 @@ object Main {
 	val kotlinGeneratorRepo: KotlinGeneratorRepo
 	val kotlinGeneratorRepoImpl: KotlinGeneratorRepoImpl
 	val kotlinGeneratorUsecase: KotlinGeneratorUsecase
+	val kotlinGeneratorUsecaseImpl: KotlinGeneratorUsecaseImpl
 
 	init {
 		//TODO: move those to some config
@@ -47,6 +48,9 @@ object Main {
 
 		val usecases = master.copy(module = Package("domain"), suffix = Package(generatedPrefix, "usecases"))
 		kotlinGeneratorUsecase = KotlinGeneratorUsecase(usecases, domain)
+
+		val usecasesImpl = master.copy(module = Package("domain"), suffix = Package(generatedPrefix, "usecases", "impl"))
+		kotlinGeneratorUsecaseImpl = KotlinGeneratorUsecaseImpl(usecasesImpl, domain, usecases, repo)
 	}
 
 	@JvmStatic
@@ -80,6 +84,7 @@ object Main {
 		kotlinGeneratorRepo.writeEndpoits(api.paths)
 		//kotlinGeneratorRepoImpl.writeEndpoits(api.paths)
 		kotlinGeneratorUsecase.writeEndpoits(api.paths)
+		kotlinGeneratorUsecaseImpl.writeEndpoits(api.paths)
 	}
 
 	private fun parseAndPrepareSwagger(path: String): Swagger {
