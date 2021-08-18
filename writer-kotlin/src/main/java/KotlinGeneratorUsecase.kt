@@ -1,5 +1,4 @@
 import Namer.domainFinalName
-import Namer.repoClassName
 import Namer.repoMethodName
 import Namer.usecaseClassName
 import models.*
@@ -13,8 +12,7 @@ class KotlinGeneratorUsecase(
 	val domain: PackageConfig,
 ) {
 
-	fun fileName(endpoint: Endpoint): String = endpoint.usecaseClassName()
-	fun fileName(tag: Tag): String = tag.usecaseClassName()
+	fun fileName(endpoint: EndpointGroup): String = endpoint.usecaseClassName()
 
 	fun writeEndpoits(input: List<Endpoint>) {
 		val directory = pkg.toDir()
@@ -45,7 +43,7 @@ class KotlinGeneratorUsecase(
 		writeEndpointInternal(writer, endpoint, listOf(endpoint))
 	}
 
-	fun writeEndpointInternal(writer: GeneratorWriter, repoClassName: EndpointGroup, endpoints: List<Endpoint>) {
+	fun writeEndpointInternal(writer: GeneratorWriter, className: EndpointGroup, endpoints: List<Endpoint>) {
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
 		writer.writeLine("import io.reactivex.Single")
@@ -53,7 +51,7 @@ class KotlinGeneratorUsecase(
 		writer.writeLine("import " + domain.toPackage() + ".*")
 		writer.writeLine("")
 
-		writer.writeLine("interface " + repoClassName.repoClassName() + " {")
+		writer.writeLine("interface " + className.usecaseClassName() + " {")
 		IndentedWriter(writer).use { writer ->
 			endpoints.forEach { endpoint ->
 				writeEndpointMethod(writer, endpoint)

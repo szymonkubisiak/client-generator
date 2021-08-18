@@ -12,8 +12,7 @@ class KotlinGeneratorRepo(
 	val domain: PackageConfig,
 ) {
 
-	fun fileName(endpoint: Endpoint): String = endpoint.repoClassName()
-	fun fileName(tag: Tag): String = tag.repoClassName()
+	fun fileName(endpoint: EndpointGroup): String = endpoint.repoClassName()
 
 	fun writeEndpoits(input: List<Endpoint>) {
 		val directory = pkg.toDir()

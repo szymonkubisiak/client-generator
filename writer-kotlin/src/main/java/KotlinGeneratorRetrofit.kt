@@ -2,6 +2,7 @@ import Namer.serviceClassName
 import Namer.serviceMethodName
 import Namer.transportFinalName
 import models.Endpoint
+import models.EndpointGroup
 import models.Param
 import models.Tag
 import utils.PackageConfig
@@ -13,8 +14,7 @@ class KotlinGeneratorRetrofit(
 	val conn: PackageConfig,
 ) {
 
-	fun fileName(endpoint: Endpoint): String = endpoint.serviceClassName()
-	fun fileName(tag: Tag): String = tag.serviceClassName()
+	fun fileName(endpoint: EndpointGroup): String = endpoint.serviceClassName()
 
 	fun writeEndpoits(input: List<Endpoint>) {
 		val directory = pkg.toDir()
