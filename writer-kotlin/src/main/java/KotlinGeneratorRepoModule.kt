@@ -1,19 +1,22 @@
+import Namer.repoClassName
 import Namer.serviceClassName
 import models.Endpoint
+import models.EndpointGroup
 import utils.PackageConfig
 import java.io.PrintWriter
 
 @Suppress("NAME_SHADOWING")
-class KotlinGeneratorRetrofitModule(
+class KotlinGeneratorRepoModule(
 	val pkg: PackageConfig,
-	val service: PackageConfig,
+	val repoDef: PackageConfig,
+	val repoImpl: PackageConfig,
 ) {
 
 	fun writeEndpoints(input: List<Endpoint>) {
 		val directory = pkg.toDir()
 		Utils.createDirectories(directory)
 
-		val className = "RetrofitModule"
+		val className = "RepoModule"
 
 		PrintWriter("$directory/$className.kt").use { file ->
 			val writer = BaseWriter(file)
@@ -21,25 +24,24 @@ class KotlinGeneratorRetrofitModule(
 			writer.writeLine("package " + pkg.toPackage())
 			writer.writeLine("")
 			writer.writeLine("import dagger.Module")
-			writer.writeLine("import dagger.Provides")
-			writer.writeLine("import " + service.toPackage() + ".*")
+			writer.writeLine("import dagger.Binds")
+			writer.writeLine("import " + repoDef.toPackage() + ".*")
+			writer.writeLine("import " + repoImpl.toPackage() + ".*")
 			writer.writeLine("")
 
 			writer.writeLine("@Module")
-			writer.writeLine("class $className {")
+			writer.writeLine("interface $className {")
 
 			IndentedWriter(writer).use { writer ->
 				val tags = input.flatMap { it.tags }.distinct()
 				tags.forEach { tag ->
-					writeEndpoint(writer, tag.serviceClassName())
+					writeEndpoint(writer, tag)
 				}
 
 				input.filter { it.tags.isNullOrEmpty() }
 					.forEach { one ->
-						writeEndpoint(writer, one.serviceClassName())
+						writeEndpoint(writer, one)
 					}
-
-				writer.writeLine("private inline fun <reified S> provideService(wrapper: RetrofitProvider) = wrapper.provide().create(S::class.java)")
 			}
 
 			writer.writeLine("}")
@@ -47,10 +49,11 @@ class KotlinGeneratorRetrofitModule(
 		}
 	}
 
-	fun writeEndpoint(writer: GeneratorWriter, serviceName: String) {
+	fun writeEndpoint(writer: GeneratorWriter, endpoint: EndpointGroup) {
 
-		writer.writeLine("@Provides")
-		writer.writeLine("fun provide$serviceName(wrapper: RetrofitProvider): $serviceName = provideService(wrapper)")
+		val className = endpoint.repoClassName()
 		writer.writeLine("")
+		writer.writeLine("@Binds")
+		writer.writeLine("fun bind$className(impl: ${className}Impl): $className")
 	}
 }

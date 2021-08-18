@@ -18,8 +18,10 @@ object Main {
 	val kotlinRetrofitModule: KotlinGeneratorRetrofitModule
 	val kotlinGeneratorRepo: KotlinGeneratorRepo
 	val kotlinGeneratorRepoImpl: KotlinGeneratorRepoImpl
+	val kotlinGeneratorRepoModule: KotlinGeneratorRepoModule
 	val kotlinGeneratorUsecase: KotlinGeneratorUsecase
 	val kotlinGeneratorUsecaseImpl: KotlinGeneratorUsecaseImpl
+	val kotlinGeneratorUsecaseModule: KotlinGeneratorUsecaseModule
 
 	init {
 		//TODO: move those to some config
@@ -37,8 +39,8 @@ object Main {
 		val retrofit = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "retrofit"))
 		kotlinRetrofit = KotlinGeneratorRetrofit(retrofit, kotlinT.pkg)
 
-		val retrofitModule = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "dagger"))
-		kotlinRetrofitModule = KotlinGeneratorRetrofitModule(retrofitModule, kotlinRetrofit.pkg)
+		val connModule = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "dagger"))
+		kotlinRetrofitModule = KotlinGeneratorRetrofitModule(connModule, kotlinRetrofit.pkg)
 
 		val repo = master.copy(module = Package("domain"), suffix = Package(generatedPrefix, "repos"))
 		kotlinGeneratorRepo = KotlinGeneratorRepo(repo, domain)
@@ -46,11 +48,16 @@ object Main {
 		val repoImpl = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "repos"))
 		kotlinGeneratorRepoImpl = KotlinGeneratorRepoImpl(repoImpl, retrofit, t2d, domain, repo)
 
+		kotlinGeneratorRepoModule = KotlinGeneratorRepoModule(connModule, repo, repoImpl)
+
 		val usecases = master.copy(module = Package("domain"), suffix = Package(generatedPrefix, "usecases"))
 		kotlinGeneratorUsecase = KotlinGeneratorUsecase(usecases, domain)
 
 		val usecasesImpl = master.copy(module = Package("domain"), suffix = Package(generatedPrefix, "usecases", "impl"))
 		kotlinGeneratorUsecaseImpl = KotlinGeneratorUsecaseImpl(usecasesImpl, domain, usecases, repo)
+
+		val domainModule = master.copy(module = Package("domain"), suffix = Package(generatedPrefix, "dagger"))
+		kotlinGeneratorUsecaseModule = KotlinGeneratorUsecaseModule(domainModule, usecases, usecasesImpl)
 	}
 
 	@JvmStatic
@@ -83,8 +90,10 @@ object Main {
 		kotlinRetrofitModule.writeEndpoints(api.paths)
 		kotlinGeneratorRepo.writeEndpoits(api.paths)
 		//kotlinGeneratorRepoImpl.writeEndpoits(api.paths)
+		//kotlinGeneratorRepoModule.writeEndpoints(api.paths)
 		kotlinGeneratorUsecase.writeEndpoits(api.paths)
 		kotlinGeneratorUsecaseImpl.writeEndpoits(api.paths)
+		kotlinGeneratorUsecaseModule.writeEndpoints(api.paths)
 	}
 
 	private fun parseAndPrepareSwagger(path: String): Swagger {
