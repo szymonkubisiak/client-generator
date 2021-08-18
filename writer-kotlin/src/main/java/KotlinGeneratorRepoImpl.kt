@@ -24,6 +24,18 @@ class KotlinGeneratorRepoImpl(
 		Utils.createDirectories(directory)
 		Utils.cleanupDirectory(directory)
 
+		PrintWriter("$directory/JwtProvider.kt").use { it ->
+			val writer = BaseWriter(it)
+			writer.writeLine("package " + pkg.toPackage())
+			writer.writeLine("")
+			writer.writeLine("import io.reactivex.Single")
+			writer.writeLine("")
+			writer.writeLine("interface JwtProvider{")
+			writer.writeLine("\tfun <T> executeWithJwt(callee: (jwt: String) -> T): T")
+			//writer.writeLine("fun <T> executeWithJwtAndXsrf(callee: (jwt: String, xsrf: String) -> T): T")
+			writer.writeLine("}")
+		}
+
 		val tags = input.flatMap { it.tags }.distinct()
 		tags.forEach { tag ->
 			PrintWriter("$directory/${fileName(tag)}.kt").use { writer ->
@@ -60,7 +72,14 @@ class KotlinGeneratorRepoImpl(
 		writer.writeLine("import javax.inject.Inject")
 		writer.writeLine("")
 
-		writer.writeLine("class " + repoClassName.repoClassName() + "Impl @Inject constructor(private val http: " + repoClassName.serviceClassName() + "): ${repoClassName.repoClassName()} {")
+		writer.writeLine("class " + repoClassName.repoClassName() + "Impl @Inject constructor(")
+		IndentedWriter(writer).use { writer ->
+			writer.writeLine("private val http: " + repoClassName.serviceClassName() + ",")
+			endpoints.mapNotNull { it.security }.flatten().firstOrNull { it.key == "JWT" }?.also {
+				writer.writeLine("private val jwt: JwtProvider,")
+			}
+		}
+		writer.writeLine("): ${repoClassName.repoClassName()} {")
 		IndentedWriter(writer).use { writer ->
 			endpoints.forEach { endpoint ->
 				writeEndpointMethod(writer, endpoint)
@@ -72,7 +91,7 @@ class KotlinGeneratorRepoImpl(
 	private fun writeEndpointMethod(writer: IndentedWriter, endpoint: Endpoint) {
 		writer.writeLine("")
 
-		if (endpoint.security.isNullOrEmpty()) {
+		if (!isPureJwtSecured(endpoint.security)) {
 			writer.writeLine("override fun " + endpoint.repoMethodName() + "(")
 		} else {
 			writeEndpointMethodWrapper(writer, endpoint)
@@ -136,8 +155,25 @@ class KotlinGeneratorRepoImpl(
 		} ?: run {
 			writer.writeLine("): Completable {")
 		}
+
+		//TODO: check the actual security, because for now we're treating everything as "JWT"
+		//endpoint.security.
+
 		IndentedWriter(writer).use { writer ->
-			writer.writeLine("return jwt.executeWithJwt(::" + endpoint.repoMethodName() + "Internal)")
+			//writer.writeLine("return jwt.executeWithJwt(::" + endpoint.repoMethodName() + "Internal)")
+			writer.writeLine("return jwt.executeWithJwt {")
+			IndentedWriter(writer).use { writer ->
+				writer.writeLine( endpoint.repoMethodName() + "Internal(")
+				IndentedWriter(writer).use { writer ->
+					writer.writeLine("it,")
+					for (param in endpoint.params) {
+						val name = param.transportName
+						writer.writeLine("$name,")
+					}
+				}
+				writer.writeLine(")")
+			}
+			writer.writeLine("}")
 		}
 		writer.writeLine("}")
 		writer.writeLine("")
@@ -150,6 +186,15 @@ class KotlinGeneratorRepoImpl(
 				val type = param.type.domainFinalName()
 				writer.writeLine("$name: $type,")
 			}
+		}
+	}
+
+	companion object {
+		fun isPureJwtSecured(security: List<Security>?): Boolean {
+			if (security == null) return false
+			if (security.size > 1) return false
+			if (security[0].key != "JWT") return false
+			return true
 		}
 	}
 }
