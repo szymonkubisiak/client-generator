@@ -65,17 +65,16 @@ class KotlinGeneratorRetrofit(
 		writer.writeLine("@" + endpoint.retrofitAnnotation() + "(\"" + endpoint.path.trimStart('/') + "\")")
 		writer.writeLine("fun " + endpoint.serviceMethodName() + "(")
 		IndentedWriter(writer).use { writer ->
-			endpoint.security?.also {
-				for (security in it) {
-					val name = Namer.kotlinizeVariableName(security.key)
-					val location = security.location.retrofitAnnotation(name)
-					val type = "String"
-					if (endpoint.params.any { param -> param.transportName == security.key }) {
-						writer.writeLine("//WARNING: security clashes with param:")
-						writer.writeLine("//@$location $name: $type,")
-					} else {
-						writer.writeLine("@$location $name: $type,")
-					}
+			endpoint.security?.forEach { security ->
+				val name = Namer.kotlinizeVariableName(security.key)
+				val location = security.location.retrofitAnnotation(name)
+				val type = "String"
+				if (endpoint.params.any { param -> param.transportName == security.key }) {
+					writer.writeLine("//WARNING: security clashes with param:")
+					writer.writeLine("//@$location $name: $type,")
+				} else {
+					writer.writeLine("@$location $name: $type,")
+
 				}
 			}
 			for (param in endpoint.params) {
