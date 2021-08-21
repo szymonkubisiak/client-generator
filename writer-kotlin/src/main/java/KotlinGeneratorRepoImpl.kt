@@ -17,7 +17,7 @@ class KotlinGeneratorRepoImpl(
 	val repos: PackageConfig,
 ) {
 
-	fun fileName(endpoint: EndpointGroup): String = endpoint.repoClassName()
+	fun fileName(endpoint: EndpointGroup): String = endpoint.repoClassName()+"Impl"
 
 	fun writeEndpoits(input: List<Endpoint>) {
 		val directory = pkg.toDir()
@@ -31,8 +31,8 @@ class KotlinGeneratorRepoImpl(
 			writer.writeLine("import io.reactivex.Single")
 			writer.writeLine("")
 			writer.writeLine("interface JwtProvider{")
-			writer.writeLine("\tfun <T> executeWithJwt(callee: (jwt: String) -> T): T")
-			//writer.writeLine("fun <T> executeWithJwtAndXsrf(callee: (jwt: String, xsrf: String) -> T): T")
+			writer.writeLine("\tfun <T> executeWithJwt(callee: (jwt: String) -> Single<T>): Single<T>")
+			//writer.writeLine("fun <T> executeWithJwtAndXsrf(callee: (jwt: String, xsrf: String) -> Single<T>): Single<T>")
 			writer.writeLine("}")
 		}
 
@@ -97,7 +97,7 @@ class KotlinGeneratorRepoImpl(
 			writeEndpointMethodWrapper(writer, endpoint)
 			writer.writeLine("private fun " + endpoint.repoMethodName() + "Internal(")
 			IndentedWriter(writer).use { writer ->
-				for (security in endpoint.security ?: emptyList()) {
+				endpoint.security?.forEach { security ->
 					val name = kotlinizeVariableName(security.key)
 					val type = "String"
 					writer.writeLine("$name: $type,")
@@ -113,14 +113,25 @@ class KotlinGeneratorRepoImpl(
 		} ?: run {
 			writer.writeLine("): Completable {")
 		}
+		if(endpoint.params.any { it.type !is BuiltinTypeDescr}){
+			writer.writeLine("\tTODO(\"implement outgoing conversion\")")
+			writer.writeLine("}")
+			return
+		}
+
 		IndentedWriter(writer).use { writer ->
 			writer.writeLine("return http." + endpoint.repoMethodName() + "(")
 
 			IndentedWriter(writer).use { writer ->
-				for (security in endpoint.security ?: emptyList()) {
+				endpoint.security?.forEach { security ->
 					val name = kotlinizeVariableName(security.key)
 					val type = "String"
-					writer.writeLine("$name,")
+					if (endpoint.params.any { param -> param.transportName == security.key }) {
+						writer.writeLine("//WARNING: security clashes with param:")
+						writer.writeLine("//$name,")
+					} else {
+						writer.writeLine("$name,")
+					}
 				}
 				for (param in endpoint.params) {
 					val name = param.transportName
