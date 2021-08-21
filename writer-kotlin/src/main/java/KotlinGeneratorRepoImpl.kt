@@ -141,7 +141,7 @@ class KotlinGeneratorRepoImpl(
 
 			writer.writeLine(")")
 			endpoint.response?.also { field ->
-				val conversionIt = KotlinGeneratorT2D.resolveTransportToDomainConversion(field.type).format("it")
+				val conversionIt = KotlinGeneratorConverters.resolveTransportToDomainConversion(field.type).format("it")
 				var expression = "it"
 				expression = if (field.isArray) {
 					"$expression.map { $conversionIt }"

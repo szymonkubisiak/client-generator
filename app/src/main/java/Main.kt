@@ -13,7 +13,7 @@ object Main {
 
 	val kotlinT: KotlinGeneratorTransport
 	val kotlinD: KotlinGeneratorDomain
-	val kotlinT2D: KotlinGeneratorT2D
+	val kotlinT2D: KotlinGeneratorConverters
 	val kotlinRetrofit: KotlinGeneratorRetrofit
 	val kotlinRetrofitModule: KotlinGeneratorRetrofitModule
 	val kotlinGeneratorRepo: KotlinGeneratorRepo
@@ -33,8 +33,8 @@ object Main {
 		val domain = master.copy(module = Package("domain"), suffix = Package(generatedPrefix, "models"))
 		kotlinD = KotlinGeneratorDomain(domain)
 
-		val t2d = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "converters"))
-		kotlinT2D = KotlinGeneratorT2D(t2d, kotlinT.pkg, kotlinD.pkg)
+		val converters = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "converters"))
+		kotlinT2D = KotlinGeneratorConverters(converters, kotlinT.pkg, kotlinD.pkg)
 
 		val retrofit = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "retrofit"))
 		kotlinRetrofit = KotlinGeneratorRetrofit(retrofit, kotlinT.pkg)
@@ -46,7 +46,7 @@ object Main {
 		kotlinGeneratorRepo = KotlinGeneratorRepo(repo, domain)
 
 		val repoImpl = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "repos"))
-		kotlinGeneratorRepoImpl = KotlinGeneratorRepoImpl(repoImpl, retrofit, t2d, domain, repo)
+		kotlinGeneratorRepoImpl = KotlinGeneratorRepoImpl(repoImpl, retrofit, converters, domain, repo)
 
 		kotlinGeneratorRepoModule = KotlinGeneratorRepoModule(connModule, repo, repoImpl)
 
@@ -89,8 +89,8 @@ object Main {
 		kotlinRetrofit.writeEndpoits(api.paths)
 		kotlinRetrofitModule.writeEndpoints(api.paths)
 		kotlinGeneratorRepo.writeEndpoits(api.paths)
-		//kotlinGeneratorRepoImpl.writeEndpoits(api.paths)
-		//kotlinGeneratorRepoModule.writeEndpoints(api.paths)
+		kotlinGeneratorRepoImpl.writeEndpoits(api.paths)
+		kotlinGeneratorRepoModule.writeEndpoints(api.paths)
 		kotlinGeneratorUsecase.writeEndpoits(api.paths)
 		kotlinGeneratorUsecaseImpl.writeEndpoits(api.paths)
 		kotlinGeneratorUsecaseModule.writeEndpoints(api.paths)

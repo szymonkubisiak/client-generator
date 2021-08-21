@@ -37,7 +37,7 @@ class KotlinGeneratorDomain(pkg: PackageConfig): KotlinGeneratorBase(pkg) {
 		writer.writeLine(")")
 	}
 
-	override fun writeField(writer: GeneratorWriter, field: Field) {
+	fun writeField(writer: GeneratorWriter, field: Field) {
 //		field.description?.also {
 //			writer.writeLine("//$it")
 //		}

@@ -29,7 +29,7 @@ class KotlinGeneratorTransport(pkg: PackageConfig) : KotlinGeneratorBase(pkg) {
 		writer.writeLine("}")
 	}
 
-	override fun writeField(writer: GeneratorWriter, field: Field) {
+	fun writeField(writer: GeneratorWriter, field: Field) {
 		val name = field.transportName
 		val rawType = field.type.transportFinalName()
 		val type = if (!field.isArray) rawType else "List<$rawType>"
