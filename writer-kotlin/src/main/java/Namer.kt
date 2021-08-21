@@ -4,10 +4,10 @@ import models.*
  * This is the central authority on what names structs and adapters will end up with
  */
 object Namer {
-	private const val T2DAdapterTemplate = "%sTransportToDomainConverter"
-	private fun getAdapterT2DName(name: String) = T2DAdapterTemplate.format(name)
 
-	fun TypeDescr.adapterT2DName() = getAdapterT2DName(this.key)
+	fun TypeDescr.adapterT2DName() = "%sTransportToDomainConverter".format(this.key)
+	fun TypeDescr.adapterD2TName() = "%sDomainToTransportConverter".format(this.key)
+
 	fun TypeDescr.transportFinalName(): String {
 		return when (this) {
 			is StructTypeDescr ->

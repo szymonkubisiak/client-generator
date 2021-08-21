@@ -8,6 +8,7 @@ class TypeResolver private constructor(){
 	private val transportTypes = HashMap<BuiltinTypeDescr, String>()
 	private val domainTypes = HashMap<BuiltinTypeDescr, String>()
 	private val adaptersT2D = HashMap<BuiltinTypeDescr, String>()
+	private val adaptersD2T = HashMap<BuiltinTypeDescr, String>()
 
 	fun resolveTransportType(t: BuiltinTypeDescr): String {
 		return transportTypes[t] ?: throw Exception("missing type")
@@ -19,6 +20,10 @@ class TypeResolver private constructor(){
 
 	fun resolveTransportToDomainConversion(type: BuiltinTypeDescr): String {
 		return adaptersT2D[type] ?: throw Exception("missing type")
+	}
+
+	fun resolveDomainToTransportConversion(type: BuiltinTypeDescr): String {
+		return adaptersD2T[type] ?: throw Exception("missing type")
 	}
 
 	init {
@@ -62,6 +67,7 @@ class TypeResolver private constructor(){
 		transportName, format,
 		kotlinTransport,
 		kotlinTransport,
+		"%s",
 		"%s"
 	)
 
@@ -74,13 +80,13 @@ class TypeResolver private constructor(){
 		kotlinTransport: String,
 		kotlinModel: String,
 		transportToModelAdapter: String,
-		//TODO: modelToTransportAdapter: String
+		modelToTransportAdapter: String
 	) {
 		val type = typeFactory.getSimpleType(transportName, format)
 		transportTypes[type] = kotlinTransport
 		domainTypes[type] = kotlinModel
 		adaptersT2D[type] = transportToModelAdapter
-		//TODO: adaptersD2T[type] = modelToTransportAdapter
+		adaptersD2T[type] = modelToTransportAdapter
 	}
 
 	companion object{
