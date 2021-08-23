@@ -17,7 +17,7 @@ class KotlinGeneratorRepoImpl(
 	val repos: PackageConfig,
 ) {
 
-	fun fileName(endpoint: EndpointGroup): String = endpoint.repoClassName()+"Impl"
+	fun fileName(endpoint: EndpointGroup): String = endpoint.repoClassName() + "Impl"
 
 	fun writeEndpoits(input: List<Endpoint>) {
 		val directory = pkg.toDir()
@@ -28,11 +28,15 @@ class KotlinGeneratorRepoImpl(
 			val writer = BaseWriter(it)
 			writer.writeLine("package " + pkg.toPackage())
 			writer.writeLine("")
+			writer.writeLine("import io.reactivex.Completable")
 			writer.writeLine("import io.reactivex.Single")
 			writer.writeLine("")
 			writer.writeLine("interface JwtProvider{")
-			writer.writeLine("\tfun <T> executeWithJwt(callee: (jwt: String) -> Single<T>): Single<T>")
-			//writer.writeLine("fun <T> executeWithJwtAndXsrf(callee: (jwt: String, xsrf: String) -> Single<T>): Single<T>")
+			IndentedWriter(writer).use { writer ->
+				writer.writeLine("fun <T> executeWithJwt(callee: (jwt: String) -> Single<T>): Single<T>")
+				writer.writeLine("fun <T> executeWithJwtAndXsrf(callee: (jwt: String, xsrf: String) -> Single<T>): Single<T>")
+				writer.writeLine("fun executeWithJwtAndXsrf(callee: (jwt: String, xsrf: String) -> Completable): Completable")
+			}
 			writer.writeLine("}")
 		}
 
@@ -91,35 +95,43 @@ class KotlinGeneratorRepoImpl(
 	private fun writeEndpointMethod(writer: IndentedWriter, endpoint: Endpoint) {
 		writer.writeLine("")
 
-		if (!isPureJwtSecured(endpoint.security)) {
+		val sortedSecurities = endpoint.security?.let(::SortedSecurities)
+
+		if (sortedSecurities == null || sortedSecurities.handled.isEmpty()) {
 			writer.writeLine("override fun " + endpoint.repoMethodName() + "(")
 		} else {
-			writeEndpointMethodWrapper(writer, endpoint)
+			writeEndpointMethodWrapper(writer, endpoint, sortedSecurities)
 			writer.writeLine("private fun " + endpoint.repoMethodName() + "Internal(")
 			IndentedWriter(writer).use { writer ->
-				endpoint.security?.forEach { security ->
+				sortedSecurities.handled.forEach { security ->
 					val name = kotlinizeVariableName(security.key)
 					val type = "String"
+					if (endpoint.params.any { param -> param.transportName == security.key }) {
+						writer.writeLine("//WARNING: security clashes with param:")
+						writer.writeLine("//$name: $type,")
+					} else {
+						writer.writeLine("$name: $type,")
+					}
+				}
+			}
+		}
+		IndentedWriter(writer).use { writer ->
+			sortedSecurities?.passed?.forEach { security ->
+				val name = kotlinizeVariableName(security.key)
+				val type = "String"
+				if (endpoint.params.any { param -> param.transportName == security.key }) {
+					writer.writeLine("//WARNING: security clashes with param:")
+					writer.writeLine("//$name: $type,")
+				} else {
 					writer.writeLine("$name: $type,")
 				}
 			}
 		}
-
 		writeParams(writer, endpoint.params)
-		endpoint.response?.also {
-			val rawType = it.type.domainFinalName()
-			val type = if (!it.isArray) rawType else "List<$rawType>"
-			writer.writeLine("): Single<$type> {")
-		} ?: run {
-			writer.writeLine("): Completable {")
-		}
-		if(endpoint.params.any { it.type !is BuiltinTypeDescr}){
-			writer.writeLine("\tTODO(\"implement outgoing conversion\")")
-			writer.writeLine("}")
-			return
-		}
+		writeFunctionReturnType(writer, endpoint)
 
 		IndentedWriter(writer).use { writer ->
+
 			writer.writeLine("return http." + endpoint.repoMethodName() + "(")
 
 			IndentedWriter(writer).use { writer ->
@@ -135,7 +147,15 @@ class KotlinGeneratorRepoImpl(
 				}
 				for (param in endpoint.params) {
 					val name = param.transportName
-					writer.writeLine("$name,")
+					val conversionIt =
+						KotlinGeneratorConverters.resolveDomainToTransportConversion(param.type).format("it")
+					var expression = name
+					expression = if (param.isArray) {
+						"$expression.map { $conversionIt },"
+					} else {
+						"$expression.let { $conversionIt },"
+					}
+					writer.writeLine(expression)
 				}
 			}
 
@@ -156,27 +176,34 @@ class KotlinGeneratorRepoImpl(
 		writer.writeLine("}")
 	}
 
-	private fun writeEndpointMethodWrapper(writer: IndentedWriter, endpoint: Endpoint) {
+	private fun writeEndpointMethodWrapper(
+		writer: IndentedWriter,
+		endpoint: Endpoint,
+		sortedSecurities: SortedSecurities
+	) {
 		writer.writeLine("override fun " + endpoint.repoMethodName() + "(")
 		writeParams(writer, endpoint.params)
-		endpoint.response?.also {
-			val rawType = it.type.domainFinalName()
-			val type = if (!it.isArray) rawType else "List<$rawType>"
-			writer.writeLine("): Single<$type> {")
-		} ?: run {
-			writer.writeLine("): Completable {")
-		}
+		writeFunctionReturnType(writer, endpoint)
 
-		//TODO: check the actual security, because for now we're treating everything as "JWT"
-		//endpoint.security.
+		val hasJwt = sortedSecurities.hasJwt()
+		val hasXsrf = sortedSecurities.hasXsrf()
 
 		IndentedWriter(writer).use { writer ->
 			//writer.writeLine("return jwt.executeWithJwt(::" + endpoint.repoMethodName() + "Internal)")
-			writer.writeLine("return jwt.executeWithJwt {")
+			if (hasJwt && !hasXsrf) {
+				writer.writeLine("return jwt.executeWithJwt { jwt ->")
+			} else if (hasJwt && hasXsrf) {
+				writer.writeLine("return jwt.executeWithJwtAndXsrf { jwt, xsrf ->")
+			} else {
+				writer.writeLine("TODO(\"handle other jwt/xsrf combinations\")")
+				return@use
+			}
+
 			IndentedWriter(writer).use { writer ->
-				writer.writeLine( endpoint.repoMethodName() + "Internal(")
+				writer.writeLine(endpoint.repoMethodName() + "Internal(")
 				IndentedWriter(writer).use { writer ->
-					writer.writeLine("it,")
+					if (hasJwt) writer.writeLine("jwt,")
+					if (hasXsrf) writer.writeLine("xsrf,")
 					for (param in endpoint.params) {
 						val name = param.transportName
 						writer.writeLine("$name,")
@@ -200,12 +227,28 @@ class KotlinGeneratorRepoImpl(
 		}
 	}
 
-	companion object {
-		fun isPureJwtSecured(security: List<Security>?): Boolean {
-			if (security == null) return false
-			if (security.size > 1) return false
-			if (security[0].key != "JWT") return false
-			return true
+	private fun writeFunctionReturnType(writer: IndentedWriter, endpoint: Endpoint) {
+		endpoint.response?.also {
+			val rawType = it.type.domainFinalName()
+			val type = if (!it.isArray) rawType else "List<$rawType>"
+			writer.writeLine("): Single<$type> {")
+		} ?: run {
+			writer.writeLine("): Completable {")
+		}
+	}
+
+
+	class SortedSecurities(input: List<Security>) {
+		//TODO: sort jwt/xsrf
+		val handled = input.filter { it.key == jwtToken || it.key == xsrfToken }
+		val passed = input.filter { it.key != jwtToken && it.key != xsrfToken }
+
+		fun hasJwt() = handled.any { it.key == jwtToken }
+		fun hasXsrf() = handled.any { it.key == xsrfToken }
+
+		companion object {
+			val jwtToken = "JWT"
+			val xsrfToken = "X-XSRF-TOKEN"
 		}
 	}
 }
