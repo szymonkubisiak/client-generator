@@ -47,6 +47,8 @@ class KotlinGeneratorRepoModule(
 			writer.writeLine("}")
 			file.flush()
 		}
+
+		writeExtras(directory)
 	}
 
 	fun writeEndpoint(writer: GeneratorWriter, endpoint: EndpointGroup) {
@@ -55,5 +57,22 @@ class KotlinGeneratorRepoModule(
 		writer.writeLine("")
 		writer.writeLine("@Binds")
 		writer.writeLine("fun bind$className(impl: ${className}Impl): $className")
+	}
+
+	fun writeExtras(directory: String) {
+		PrintWriter("$directory/RetrofitProvider.kt").use { writer ->
+			writeRetrofitProvider(BaseWriter(writer))
+			writer.flush()
+		}
+	}
+
+	private fun writeRetrofitProvider(writer: GeneratorWriter) {
+		writer.writeLine("package " + pkg.toPackage())
+		writer.writeLine("")
+		writer.writeLine("import retrofit2.Retrofit")
+		writer.writeLine("")
+		writer.writeLine("interface RetrofitProvider {")
+		writer.writeLine("\tfun provide(): Retrofit")
+		writer.writeLine("}")
 	}
 }
