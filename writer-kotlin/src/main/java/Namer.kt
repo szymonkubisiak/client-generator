@@ -7,6 +7,7 @@ object Namer {
 
 	fun TypeDescr.adapterT2DName() = "%sTransportToDomainConverter".format(this.key)
 	fun TypeDescr.adapterD2TName() = "%sDomainToTransportConverter".format(this.key)
+	fun TypeDescr.adapterD2MapName() = "%sDomainToMapConverter".format(this.key)
 
 	fun TypeDescr.transportFinalName(): String {
 		return when (this) {

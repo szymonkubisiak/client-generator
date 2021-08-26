@@ -1,3 +1,4 @@
+import Namer.adapterD2MapName
 import Namer.adapterD2TName
 import Namer.domainFinalName
 import Namer.transportFinalName
@@ -25,6 +26,7 @@ class KotlinGeneratorConverters(
 				writeActualStructT2D(writer, model)
 				writer.writeLine("")
 				writeActualStructD2T(writer, model)
+				writeActualStructD2Map(writer, model)
 			}
 			is StructEnum -> return
 		}
@@ -111,6 +113,55 @@ class KotlinGeneratorConverters(
 		writer.writeLine(expression)
 	}
 
+	private fun writeActualStructD2Map(writer: GeneratorWriter, model: StructActual) {
+		try {
+			model.fields.forEach {
+				if(it.isArray) return
+				resolveDomainToMapFieldConversion(it.type)
+			}
+		} catch (ex: InvalidFieldException) {
+			return
+		}
+
+		writer.writeLine("")
+		val transportTypeName = "Map<String, String?>"
+		val domainTypeName = model.type.domainFinalName()
+		writer.writeLine("fun ${model.type.adapterD2MapName()}(input: $domainTypeName): $transportTypeName {")
+		IndentedWriter(writer).use { writer ->
+			writer.writeLine("val retval = HashMap<String, String?>().apply {")
+			IndentedWriter(writer).use { writer ->
+				model.fields.forEach {
+					writeFieldD2Map(writer, it)
+				}
+			}
+			writer.writeLine("}")
+			writer.writeLine("return retval")
+		}
+		writer.writeLine("}")
+	}
+
+	private fun writeFieldD2Map(writer: GeneratorWriter, field: Field) {
+		val name = field.transportName
+		val conversion = resolveDomainToMapFieldConversion(field.type)
+		val conversionIt = conversion.format("it")
+
+		var expression = "this[\"$name\"] = input.$name"
+
+		expression = if (field.mandatory) {
+			expression
+		} else {
+			"$expression?"
+		}
+
+		expression = if (field.isArray) {
+			throw InvalidFieldException("enum type ${field.transportName} cannot be converted to map")
+		} else {
+			"$expression.let { $conversionIt }"
+		}
+
+		writer.writeLine(expression)
+	}
+
 	private fun writeImports(writer: GeneratorWriter) {
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
@@ -154,5 +205,27 @@ class KotlinGeneratorConverters(
 				}
 			}
 		}
+
+		private fun resolveDomainToMapFieldConversion(type: TypeDescr): String {
+			return when (type) {
+				is BuiltinTypeDescr -> TypeResolver.instance.resolveDomainToTransportConversion(type) + ".toString()"
+				is StructTypeDescr -> when (type.definition!!) {
+					is StructActual -> throw InvalidFieldException("complex type ${type.key} cannot be flattened")
+					is StructEnum -> "%s.name"
+				}
+			}
+		}
+
+		fun resolveDomainToMapConversion(type: TypeDescr): String {
+			return when (type) {
+				is BuiltinTypeDescr -> throw InvalidFieldException("simple type ${type.key} cannot be converted to map")
+				is StructTypeDescr -> when (type.definition!!) {
+					is StructActual -> "${type.adapterD2MapName()}(%s)"
+					is StructEnum -> throw InvalidFieldException("enum type ${type.key} cannot be converted to map")
+				}
+			}
+		}
+
+		class InvalidFieldException(message: String) : Exception(message)
 	}
 }

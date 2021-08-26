@@ -147,8 +147,11 @@ class KotlinGeneratorRepoImpl(
 				}
 				for (param in endpoint.params) {
 					val name = param.transportName
-					val conversionIt =
+					val isForm = KotlinGeneratorRetrofit.isWwwForm(param)
+					val conversionIt = if (!isForm)
 						KotlinGeneratorConverters.resolveDomainToTransportConversion(param.type).format("it")
+					else
+						KotlinGeneratorConverters.resolveDomainToMapConversion(param.type).format("it")
 					var expression = name
 					expression = if (param.isArray) {
 						"$expression.map { $conversionIt },"

@@ -62,6 +62,9 @@ class KotlinGeneratorRetrofit(
 
 	private fun writeEndpointMethod(writer: IndentedWriter, endpoint: Endpoint): Any {
 		writer.writeLine("")
+		if (isWwwForm(endpoint)) {
+			writer.writeLine("@FormUrlEncoded")
+		}
 		writer.writeLine("@" + endpoint.retrofitAnnotation() + "(\"" + endpoint.path.trimStart('/') + "\")")
 		writer.writeLine("fun " + endpoint.serviceMethodName() + "(")
 		IndentedWriter(writer).use { writer ->
@@ -82,12 +85,10 @@ class KotlinGeneratorRetrofit(
 				val location = param.location.retrofitAnnotation(name)
 				val type = param.type.transportFinalName()
 
-				writer.writeLine("@$location $name: $type,")
-
-				(param.location as? Param.Location.BODY)?.mediaType?.also {
-					if (it.contains("form")) {
-						writer.writeLine("//TODO: MediaType: " + it)
-					}
+				if (isWwwForm(param)) {
+					writer.writeLine("@FieldMap(encoded = false) $name: Map<String, String?>,")
+				} else {
+					writer.writeLine("@$location $name: $type,")
 				}
 			}
 		}
@@ -101,6 +102,17 @@ class KotlinGeneratorRetrofit(
 	}
 
 	companion object {
+		private const val mediaTypeWwwForm = "application/x-www-form-urlencoded"
+
+		fun isWwwForm(input: Endpoint): Boolean {
+			return input.params.any(::isWwwForm)
+		}
+
+		fun isWwwForm(input: Param): Boolean {
+			val bodyParam = input.location as? Param.Location.BODY ?: return false
+			return bodyParam.mediaType == mediaTypeWwwForm
+		}
+
 		fun Param.Location.retrofitAnnotation(name: String) =
 			when (this) {
 				Param.Location.PATH -> "Path(\"$name\")"
