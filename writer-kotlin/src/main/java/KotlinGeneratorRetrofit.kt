@@ -67,7 +67,7 @@ class KotlinGeneratorRetrofit(
 		IndentedWriter(writer).use { writer ->
 			endpoint.security?.forEach { security ->
 				val name = Namer.kotlinizeVariableName(security.key)
-				val location = security.location.retrofitAnnotation(name)
+				val location = security.location.retrofitAnnotation(security.key)
 				val type = "String"
 				if (endpoint.params.any { param -> param.transportName == security.key }) {
 					writer.writeLine("//WARNING: security clashes with param:")
