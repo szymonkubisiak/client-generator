@@ -188,12 +188,18 @@ class KotlinGeneratorRepoImpl(
 		val hasJwt = sortedSecurities.hasJwt()
 		val hasXsrf = sortedSecurities.hasXsrf()
 
+		val returnType = endpoint.response?.let {
+			val rawType = it.type.domainFinalName()
+			val type = if (!it.isArray) rawType else "List<$rawType>"
+			"<$type>"
+		} ?: ""
+
 		IndentedWriter(writer).use { writer ->
 			//writer.writeLine("return jwt.executeWithJwt(::" + endpoint.repoMethodName() + "Internal)")
 			if (hasJwt && !hasXsrf) {
 				writer.writeLine("return jwt.executeWithJwt { jwt ->")
 			} else if (hasJwt && hasXsrf) {
-				writer.writeLine("return jwt.executeWithJwtAndXsrf { jwt, xsrf ->")
+				writer.writeLine("return jwt.executeWithJwtAndXsrf$returnType { jwt, xsrf ->")
 			} else {
 				writer.writeLine("TODO(\"handle other jwt/xsrf combinations\")")
 				return@use
