@@ -10,20 +10,20 @@ class TypeResolver private constructor(){
 	private val adaptersT2D = HashMap<BuiltinTypeDescr, String>()
 	private val adaptersD2T = HashMap<BuiltinTypeDescr, String>()
 
-	fun resolveTransportType(t: BuiltinTypeDescr): String {
-		return transportTypes[t] ?: throw Exception("missing type")
+	fun resolveTransportType(type: BuiltinTypeDescr): String {
+		return transportTypes[type] ?: throw Exception("missing type [$type]")
 	}
 
 	fun resolveDomainType(type: BuiltinTypeDescr): String {
-		return domainTypes[type] ?: throw Exception("missing type")
+		return domainTypes[type] ?: throw Exception("missing type [$type]")
 	}
 
 	fun resolveTransportToDomainConversion(type: BuiltinTypeDescr): String {
-		return adaptersT2D[type] ?: throw Exception("missing type")
+		return adaptersT2D[type] ?: throw Exception("missing type [$type]")
 	}
 
 	fun resolveDomainToTransportConversion(type: BuiltinTypeDescr): String {
-		return adaptersD2T[type] ?: throw Exception("missing type")
+		return adaptersD2T[type] ?: throw Exception("missing type [$type]")
 	}
 
 	init {
