@@ -1,4 +1,6 @@
+import KotlinGeneratorRepoImpl.SortedSecurities
 import Namer.domainFinalName
+import Namer.kotlinizeVariableName
 import Namer.repoMethodName
 import Namer.usecaseClassName
 import models.*
@@ -65,7 +67,17 @@ class KotlinGeneratorUsecase(
 
 		writer.writeLine("fun " + endpoint.repoMethodName() + "(")
 		IndentedWriter(writer).use { writer ->
-
+			val sortedSecurities = endpoint.security?.let(::SortedSecurities)
+			sortedSecurities?.passed?.forEach { security ->
+				val name = kotlinizeVariableName(security.key)
+				val type = "String"
+				if (endpoint.params.any { param -> param.transportName == security.key }) {
+					writer.writeLine("//WARNING: security clashes with param:")
+					writer.writeLine("//$name: $type,")
+				} else {
+					writer.writeLine("$name: $type,")
+				}
+			}
 			for (param in endpoint.params) {
 				val name = param.transportName
 
