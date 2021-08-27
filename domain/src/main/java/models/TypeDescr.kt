@@ -19,7 +19,7 @@ data class BuiltinTypeDescr internal constructor(override val key: String, var f
 /**
  * Describes a type that is defined in a given spec and has both transport and domain forms
  */
-data class StructTypeDescr internal constructor (override val key: String): TypeDescr() {
+data class RefTypeDescr internal constructor (override val key: String): TypeDescr() {
 	var definition: Struct? = null
 }
 
@@ -41,8 +41,8 @@ class TypeDescrFactory {
 		return canonicalize(newType)
 	}
 
-	fun getRefType(type: String) : StructTypeDescr {
-		val newType = StructTypeDescr(type)
+	fun getRefType(type: String) : RefTypeDescr {
+		val newType = RefTypeDescr(type)
 		return canonicalize(newType)
 	}
 }

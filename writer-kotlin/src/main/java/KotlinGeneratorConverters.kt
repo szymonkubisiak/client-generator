@@ -14,7 +14,7 @@ class KotlinGeneratorConverters(
 	val domain: PackageConfig,
 ) : KotlinGeneratorBase(pkg) {
 
-	override fun fileName(type: StructTypeDescr): String = type.key
+	override fun fileName(type: RefTypeDescr): String = type.key
 	override fun isWriteable(type: Struct): Boolean {
 		return type !is StructEnum
 	}
@@ -189,7 +189,7 @@ class KotlinGeneratorConverters(
 		fun resolveTransportToDomainConversion(type: TypeDescr): String {
 			return when (type) {
 				is BuiltinTypeDescr -> TypeResolver.instance.resolveTransportToDomainConversion(type)
-				is StructTypeDescr -> when (type.definition!!) {
+				is RefTypeDescr -> when (type.definition!!) {
 					is StructActual -> "${type.adapterT2DName()}(%s)"
 					is StructEnum -> type.key + ".valueOf(%s)"
 				}
@@ -199,7 +199,7 @@ class KotlinGeneratorConverters(
 		fun resolveDomainToTransportConversion(type: TypeDescr): String {
 			return when (type) {
 				is BuiltinTypeDescr -> TypeResolver.instance.resolveDomainToTransportConversion(type)
-				is StructTypeDescr -> when (type.definition!!) {
+				is RefTypeDescr -> when (type.definition!!) {
 					is StructActual -> "${type.adapterD2TName()}(%s)"
 					is StructEnum -> "%s.name"
 				}
@@ -209,7 +209,7 @@ class KotlinGeneratorConverters(
 		private fun resolveDomainToMapFieldConversion(type: TypeDescr): String {
 			return when (type) {
 				is BuiltinTypeDescr -> TypeResolver.instance.resolveDomainToTransportConversion(type) + ".toString()"
-				is StructTypeDescr -> when (type.definition!!) {
+				is RefTypeDescr -> when (type.definition!!) {
 					is StructActual -> throw InvalidFieldException("complex type ${type.key} cannot be flattened")
 					is StructEnum -> "%s.name"
 				}
@@ -219,7 +219,7 @@ class KotlinGeneratorConverters(
 		fun resolveDomainToMapConversion(type: TypeDescr): String {
 			return when (type) {
 				is BuiltinTypeDescr -> throw InvalidFieldException("simple type ${type.key} cannot be converted to map")
-				is StructTypeDescr -> when (type.definition!!) {
+				is RefTypeDescr -> when (type.definition!!) {
 					is StructActual -> "${type.adapterD2MapName()}(%s)"
 					is StructEnum -> throw InvalidFieldException("enum type ${type.key} cannot be converted to map")
 				}

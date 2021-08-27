@@ -11,7 +11,7 @@ object Namer {
 
 	fun TypeDescr.transportFinalName(): String {
 		return when (this) {
-			is StructTypeDescr ->
+			is RefTypeDescr ->
 				when (val definition = this.definition!!) {
 					is StructActual -> this.key + "Pojo"
 					is StructEnum -> TypeResolver.instance.resolveTransportType(definition.transportType)
@@ -20,12 +20,12 @@ object Namer {
 		}
 	}
 
-	fun StructTypeDescr.domainFinalName() = this.key// + "Dom"
+	fun RefTypeDescr.domainFinalName() = this.key// + "Dom"
 
 	fun TypeDescr.domainFinalName():String {
 		return when (this) {
 			is BuiltinTypeDescr -> TypeResolver.instance.resolveDomainType(this)
-			is StructTypeDescr -> this.domainFinalName()
+			is RefTypeDescr -> this.domainFinalName()
 		}
 	}
 

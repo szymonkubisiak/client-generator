@@ -5,7 +5,7 @@ import utils.PackageConfig
 @Suppress("NAME_SHADOWING")
 class KotlinGeneratorDomain(pkg: PackageConfig): KotlinGeneratorBase(pkg) {
 
-	override fun fileName(type: StructTypeDescr): String = type.domainFinalName()
+	override fun fileName(type: RefTypeDescr): String = type.domainFinalName()
 
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
 		writer.writeLine("package " + pkg.toPackage())

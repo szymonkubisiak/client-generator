@@ -5,7 +5,7 @@ import utils.PackageConfig
 @Suppress("NAME_SHADOWING")
 class KotlinGeneratorTransport(pkg: PackageConfig) : KotlinGeneratorBase(pkg) {
 
-	override fun fileName(type: StructTypeDescr): String = type.transportFinalName()
+	override fun fileName(type: RefTypeDescr): String = type.transportFinalName()
 	override fun isWriteable(type: Struct): Boolean {
 		return type !is StructEnum
 	}

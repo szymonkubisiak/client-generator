@@ -5,18 +5,18 @@ class Api(
 	val paths: List<Endpoint>,
 ) {
 
-	val incoming = ArrayList<StructTypeDescr>()
-	val outgoing = ArrayList<StructTypeDescr>()
+	val incoming = ArrayList<RefTypeDescr>()
+	val outgoing = ArrayList<RefTypeDescr>()
 
 	init {
 		if (paths != null) {
 			paths.forEach { endpoint ->
 
-				(endpoint.response as? StructTypeDescr)?.also { incoming.add(it) }
+				(endpoint.response as? RefTypeDescr)?.also { incoming.add(it) }
 
 				endpoint.params
 					.map { it.type }
-					.filterIsInstance<StructTypeDescr>()
+					.filterIsInstance<RefTypeDescr>()
 					.forEach { outgoing.add(it) }
 
 			}

@@ -20,7 +20,7 @@ class SwaggerConverter {
 //		return retval
 //	}
 
-	fun model2struct(type: StructTypeDescr, input: Model): Struct {
+	fun model2struct(type: RefTypeDescr, input: Model): Struct {
 		if (input !is ModelImpl || input.type != "object")
 			throw NotImplementedError("not an object")
 		val fields = input.properties.map { oneField ->

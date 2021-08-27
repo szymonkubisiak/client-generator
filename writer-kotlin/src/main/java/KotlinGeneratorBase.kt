@@ -8,7 +8,7 @@ abstract class KotlinGeneratorBase(
 ) {
 	abstract fun writeStruct(writer: GeneratorWriter, model: Struct)
 	//abstract fun writeField(writer: GeneratorWriter, field: Field)
-	abstract fun fileName(type: StructTypeDescr): String
+	abstract fun fileName(type: RefTypeDescr): String
 	open fun isWriteable(type: Struct) = true
 	open fun writeExtras(directory: String) {}
 
