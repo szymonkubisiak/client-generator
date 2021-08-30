@@ -7,25 +7,40 @@ abstract class KotlinGeneratorBase(
 	protected val typeResolver: TypeResolver = TypeResolver.instance,
 ) {
 	abstract fun writeStruct(writer: GeneratorWriter, model: Struct)
-	//abstract fun writeField(writer: GeneratorWriter, field: Field)
 	abstract fun fileName(type: RefTypeDescr): String
 	open fun isWriteable(type: Struct) = true
-	open fun writeExtras(directory: String) {}
+	open fun writeExtras() {}
 
 
-	open fun writeStructs(models: List<Struct>, cleanDirectory: Boolean = true) {
-		val directory = pkg.toDir()
-		Utils.createDirectories(directory)
-		if(cleanDirectory) Utils.cleanupDirectory(directory)
+	open fun writeStructs(models: List<Struct>) {
+		pkg.createAndCleanupDirectory()
 		models.forEach { struct ->
 			if (!isWriteable(struct)) {
 				return@forEach
 			}
-			PrintWriter("$directory/${fileName(struct.type)}.kt").use { writer ->
-				writeStruct(BaseWriter(writer), struct)
-				writer.flush()
+			pkg.openFile("${fileName(struct.type)}.kt").use { writer ->
+				writeStruct(writer, struct)
 			}
 		}
-		writeExtras(directory)
+		writeExtras()
+	}
+
+	fun PackageConfig.createDirectory() {
+		Utils.createDirectories(this.asDir)
+	}
+
+	fun PackageConfig.cleanupDirectory() {
+		Utils.cleanupDirectory(this.asDir)
+	}
+
+	fun PackageConfig.createAndCleanupDirectory() {
+		createDirectory()
+		cleanupDirectory()
+	}
+
+	fun PackageConfig.openFile(fileName: String): BaseWriter {
+		val outerWriter = PrintWriter("$asDir/$fileName")
+		val retval = BaseWriter(outerWriter)
+		return retval
 	}
 }

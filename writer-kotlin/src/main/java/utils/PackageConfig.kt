@@ -1,18 +1,19 @@
 package utils
 
 data class PackageConfig(
-	val rootDir: Package? = null,
-	val module: Package? = null,
+	val rootDir: Package,
+	val module: Package,
 	val subdirs: Package = Package.javaDefaultDir,
-	val project: Package? = null,
-	val suffix: Package? = null,
+	val project: Package,
+	val suffix: Package,
 ) {
 
+	val asDir = (rootDir + module + subdirs + project + module + suffix).toDir()
 	fun toDir(): String {
-		return (rootDir!! + module!! + subdirs + project!! + module + suffix!!).toDir()
+		return asDir
 	}
 
 	fun toPackage(): String {
-		return (project!! + module!! + suffix!!).toPackage()
+		return (project + module!! + suffix).toPackage()
 	}
 }

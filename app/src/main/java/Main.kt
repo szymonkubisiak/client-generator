@@ -25,8 +25,8 @@ object Main {
 
 	init {
 		//TODO: move those to some config
-		val master = PackageConfig(rootDir = Package("out"), project = Package("com", "example"))
 		val generatedPrefix = "generated"
+		val master = PackageConfig(rootDir = Package("out"), project = Package("com", "example"), suffix = Package(generatedPrefix), module = Package.dummy)
 		val transport = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "models"))
 		kotlinT = KotlinGeneratorTransport(transport)
 

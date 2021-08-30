@@ -170,10 +170,9 @@ class KotlinGeneratorConverters(
 		writer.writeLine("")
 	}
 
-	override fun writeExtras(directory: String) {
-		PrintWriter("$directory/MandatoryIsNullException.kt").use { writer ->
-			writeMandatoryIsNullException(BaseWriter(writer))
-			writer.flush()
+	override fun writeExtras() {
+		pkg.openFile("MandatoryIsNullException.kt").use { writer ->
+			writeMandatoryIsNullException(writer)
 		}
 	}
 
