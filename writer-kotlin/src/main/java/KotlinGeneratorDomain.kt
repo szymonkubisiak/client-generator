@@ -3,7 +3,7 @@ import models.*
 import utils.PackageConfig
 
 @Suppress("NAME_SHADOWING")
-class KotlinGeneratorDomain(pkg: PackageConfig): KotlinGeneratorBase(pkg) {
+class KotlinGeneratorDomain(pkg: PackageConfig): KotlinGeneratorBaseStructs(pkg) {
 
 	override fun fileName(type: RefTypeDescr): String = type.domainFinalName()
 

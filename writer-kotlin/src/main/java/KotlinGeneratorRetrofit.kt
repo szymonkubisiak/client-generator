@@ -10,39 +10,14 @@ import java.io.PrintWriter
 
 @Suppress("NAME_SHADOWING")
 class KotlinGeneratorRetrofit(
-	val pkg: PackageConfig,
+	pkg: PackageConfig,
 	val conn: PackageConfig,
-) {
+) : KotlinGeneratorBaseEndpoints(pkg) {
 
-	fun fileName(endpoint: EndpointGroup): String = endpoint.serviceClassName()
+	override fun fileName(endpoint: EndpointGroup): String = endpoint.serviceClassName()
 
-	fun writeEndpoits(input: List<Endpoint>) {
-		val directory = pkg.toDir()
-		Utils.createDirectories(directory)
-		Utils.cleanupDirectory(directory)
-
-		val tags = input.flatMap { it.tags }.distinct()
-		tags.forEach { tag ->
-			PrintWriter("$directory/${fileName(tag)}.kt").use { writer ->
-				writeEndpointInternal(BaseWriter(writer), tag.serviceClassName(), input.filter { it.tags.contains(tag) })
-				writer.flush()
-			}
-		}
-
-		input.filter { it.tags.isNullOrEmpty() }
-			.forEach { one ->
-			PrintWriter("$directory/${fileName(one)}.kt").use { writer ->
-				writeEndpoint(BaseWriter(writer), one)
-				writer.flush()
-			}
-		}
-	}
-
-	fun writeEndpoint(writer: GeneratorWriter, endpoint: Endpoint) {
-		writeEndpointInternal(writer, endpoint.serviceClassName(), listOf(endpoint))
-	}
-
-	fun writeEndpointInternal(writer: GeneratorWriter, serviceClassName: String, endpoints: List<Endpoint>) {
+	override fun writeEndpointInternal(writer: GeneratorWriter, groupName: EndpointGroup, endpoints: List<Endpoint>) {
+		val serviceClassName = fileName(groupName)
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
 		writer.writeLine("import io.reactivex.Single")

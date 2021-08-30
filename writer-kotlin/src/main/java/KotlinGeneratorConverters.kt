@@ -12,7 +12,7 @@ class KotlinGeneratorConverters(
 	pkg: PackageConfig,
 	val conn: PackageConfig,
 	val domain: PackageConfig,
-) : KotlinGeneratorBase(pkg) {
+) : KotlinGeneratorBaseStructs(pkg) {
 
 	override fun fileName(type: RefTypeDescr): String = type.key
 	override fun isWriteable(type: Struct): Boolean {
