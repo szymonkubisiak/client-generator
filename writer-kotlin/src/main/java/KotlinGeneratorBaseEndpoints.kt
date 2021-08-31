@@ -1,32 +1,42 @@
-
 import models.Endpoint
 import models.EndpointGroup
+import models.Tag
 import utils.PackageConfig
 
 abstract class KotlinGeneratorBaseEndpoints(pkg: PackageConfig) : KotlinGeneratorBase(pkg) {
 
 	abstract fun fileName(endpoint: EndpointGroup): String
 	abstract fun writeEndpointInternal(writer: GeneratorWriter, groupName: EndpointGroup, endpoints: List<Endpoint>)
+	open fun writeExtras() {}
+
+	data class Group(val name: EndpointGroup, val contents: List<Endpoint>)
 
 	fun writeEndpoits(input: List<Endpoint>) {
 		pkg.createAndCleanupDirectory()
 
-		val tags = input.flatMap { it.tags }.distinct()
-		tags.forEach { tag ->
-			pkg.openFile("${fileName(tag)}.kt").use { writer ->
-				writeEndpointInternal(writer, tag, input.filter { it.tags.contains(tag) })
+		input.flatMap { it.tags }
+			.distinct()
+			.map { tag ->
+				Group(tag, input.filter { it.tags.contains(tag) })
 			}
-		}
+			.forEach { group ->
+				writeGroup(group.name, group.contents)
+			}
 
 		input.filter { it.tags.isEmpty() }
-			.forEach { one ->
-				pkg.openFile("${fileName(one)}.kt").use { writer ->
-					writeEndpoint(writer, one)
-				}
+			.map { one ->
+				Group(one, listOf(one))
 			}
+			.forEach { group ->
+				writeGroup(group.name, group.contents)
+			}
+
+		writeExtras()
 	}
 
-	private fun writeEndpoint(writer: GeneratorWriter, endpoint: Endpoint) {
-		writeEndpointInternal(writer, endpoint, listOf(endpoint))
+	private fun writeGroup(name: EndpointGroup, contents: List<Endpoint>) {
+		pkg.openFile("${fileName(name)}.kt").use { writer ->
+			writeEndpointInternal(writer, name, contents)
+		}
 	}
 }

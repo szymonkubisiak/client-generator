@@ -10,22 +10,17 @@ import java.io.PrintWriter
 
 @Suppress("NAME_SHADOWING")
 class KotlinGeneratorRepoImpl(
-	val pkg: PackageConfig,
+	pkg: PackageConfig,
 	val retrofit: PackageConfig,
 	val t2d: PackageConfig,
 	val domain: PackageConfig,
 	val repos: PackageConfig,
-) {
+) : KotlinGeneratorBaseEndpoints(pkg) {
 
-	fun fileName(endpoint: EndpointGroup): String = endpoint.repoClassName() + "Impl"
+	override fun fileName(endpoint: EndpointGroup): String = endpoint.repoClassName() + "Impl"
 
-	fun writeEndpoits(input: List<Endpoint>) {
-		val directory = pkg.toDir()
-		Utils.createDirectories(directory)
-		Utils.cleanupDirectory(directory)
-
-		PrintWriter("$directory/JwtProvider.kt").use { it ->
-			val writer = BaseWriter(it)
+	override fun writeExtras() {
+		pkg.openFile("JwtProvider.kt").use { writer ->
 			writer.writeLine("package " + pkg.toPackage())
 			writer.writeLine("")
 			writer.writeLine("import io.reactivex.Completable")
@@ -39,32 +34,9 @@ class KotlinGeneratorRepoImpl(
 			}
 			writer.writeLine("}")
 		}
-
-		val tags = input.flatMap { it.tags }.distinct()
-		tags.forEach { tag ->
-			PrintWriter("$directory/${fileName(tag)}.kt").use { writer ->
-				writeEndpointInternal(
-					BaseWriter(writer),
-					tag,
-					input.filter { it.tags.contains(tag) })
-				writer.flush()
-			}
-		}
-
-		input.filter { it.tags.isNullOrEmpty() }
-			.forEach { one ->
-				PrintWriter("$directory/${fileName(one)}.kt").use { writer ->
-					writeEndpoint(BaseWriter(writer), one)
-					writer.flush()
-				}
-			}
 	}
 
-	fun writeEndpoint(writer: GeneratorWriter, endpoint: Endpoint) {
-		writeEndpointInternal(writer, endpoint, listOf(endpoint))
-	}
-
-	fun writeEndpointInternal(writer: GeneratorWriter, repoClassName: EndpointGroup, endpoints: List<Endpoint>) {
+	override fun writeEndpointInternal(writer: GeneratorWriter, groupName: EndpointGroup, endpoints: List<Endpoint>) {
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
 		writer.writeLine("import io.reactivex.Single")
@@ -76,14 +48,14 @@ class KotlinGeneratorRepoImpl(
 		writer.writeLine("import javax.inject.Inject")
 		writer.writeLine("")
 
-		writer.writeLine("class " + repoClassName.repoClassName() + "Impl @Inject constructor(")
+		writer.writeLine("class " + groupName.repoClassName() + "Impl @Inject constructor(")
 		IndentedWriter(writer).use { writer ->
-			writer.writeLine("private val http: " + repoClassName.serviceClassName() + ",")
+			writer.writeLine("private val http: " + groupName.serviceClassName() + ",")
 			endpoints.mapNotNull { it.security }.flatten().firstOrNull { it.key == "JWT" }?.also {
 				writer.writeLine("private val jwt: JwtProvider,")
 			}
 		}
-		writer.writeLine("): ${repoClassName.repoClassName()} {")
+		writer.writeLine("): ${groupName.repoClassName()} {")
 		IndentedWriter(writer).use { writer ->
 			endpoints.forEach { endpoint ->
 				writeEndpointMethod(writer, endpoint)
