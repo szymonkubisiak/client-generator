@@ -58,7 +58,7 @@ class KotlinGeneratorRetrofit(
 			for (param in endpoint.params) {
 				val name = param.transportName
 				val location = param.location.retrofitAnnotation(name)
-				val type = param.type.transportFinalName()
+				val type = param.type.transportFinalName() + if (!param.mandatory) "?" else ""
 
 				if (isWwwForm(param)) {
 					writer.writeLine("@FieldMap(encoded = false) $name: Map<String, String?>,")

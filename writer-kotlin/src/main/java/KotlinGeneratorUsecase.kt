@@ -51,7 +51,7 @@ class KotlinGeneratorUsecase(
 			for (param in endpoint.params) {
 				val name = param.transportName
 
-				val type = param.type.domainFinalName()
+				val type = param.type.domainFinalName() + if (!param.mandatory) "? = null" else ""
 
 				writer.writeLine("$name: $type,")
 			}

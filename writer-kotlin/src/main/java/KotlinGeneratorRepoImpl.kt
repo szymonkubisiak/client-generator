@@ -125,6 +125,9 @@ class KotlinGeneratorRepoImpl(
 					else
 						KotlinGeneratorConverters.resolveDomainToMapConversion(param.type).format("it")
 					var expression = name
+					if(!param.mandatory) {
+						expression += "?"
+					}
 					expression = if (param.isArray) {
 						"$expression.map { $conversionIt },"
 					} else {
@@ -202,7 +205,7 @@ class KotlinGeneratorRepoImpl(
 		IndentedWriter(writer).use { writer ->
 			for (param in params) {
 				val name = param.transportName
-				val type = param.type.domainFinalName()
+				val type = param.type.domainFinalName() + if (!param.mandatory) "?" else ""
 				writer.writeLine("$name: $type,")
 			}
 		}
