@@ -6,6 +6,10 @@ package models
  */
 sealed class TypeDescr {
 	abstract val key: String
+
+	override fun toString(): String {
+		return key
+	}
 }
 
 /**
