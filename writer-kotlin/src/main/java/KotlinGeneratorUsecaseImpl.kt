@@ -41,7 +41,11 @@ class KotlinGeneratorUsecaseImpl(
 
 	private fun writeEndpointMethod(writer: IndentedWriter, endpoint: Endpoint) {
 		writer.writeLine("")
-
+		endpoint.description?.split('\n')?.also { descriptionLines ->
+			writer.writeLine("/*")
+			descriptionLines.forEach { writer.writeLine(it) }
+			writer.writeLine("*/")
+		}
 		writer.writeLine("override fun " + endpoint.usecaseMethodName() + "(")
 		IndentedWriter(writer).use { writer ->
 			val sortedSecurities = endpoint.security?.let(::SortedSecurities)

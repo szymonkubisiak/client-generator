@@ -38,6 +38,7 @@ class OpenApiConverter {
 			?.flatMap { it.keys }
 			?.map { key -> securityDefs.first { it.key == key } }
 
+		val concatenatedDescription = listOf(input.summary, input.description).filterNotNull().takeIf { it.isNotEmpty() }?.joinToString("\n")
 		return Endpoint(
 			input.operationId,
 			path,
@@ -48,6 +49,7 @@ class OpenApiConverter {
 			response?.second,
 			response?.first,
 			security,
+			concatenatedDescription
 		)
 	}
 

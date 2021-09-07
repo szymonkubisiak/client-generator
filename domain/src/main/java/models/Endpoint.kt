@@ -9,6 +9,7 @@ class Endpoint(
 	val response: Field?, //TODO: create a better suiting type
 	val mediaType: String?,
 	val security: List<Security>?,
+	val description: String?,
 ) : EndpointGroup {
 	override val key = name
 }

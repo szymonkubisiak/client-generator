@@ -66,7 +66,11 @@ class KotlinGeneratorRepoImpl(
 
 	private fun writeEndpointMethod(writer: IndentedWriter, endpoint: Endpoint) {
 		writer.writeLine("")
-
+		endpoint.description?.split('\n')?.also { descriptionLines ->
+			writer.writeLine("/*")
+			descriptionLines.forEach { writer.writeLine(it) }
+			writer.writeLine("*/")
+		}
 		val sortedSecurities = endpoint.security?.let(::SortedSecurities)
 
 		if (sortedSecurities == null || sortedSecurities.handled.isEmpty()) {

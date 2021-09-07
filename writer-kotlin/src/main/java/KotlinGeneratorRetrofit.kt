@@ -37,6 +37,11 @@ class KotlinGeneratorRetrofit(
 
 	private fun writeEndpointMethod(writer: IndentedWriter, endpoint: Endpoint): Any {
 		writer.writeLine("")
+		endpoint.description?.split('\n')?.also { descriptionLines ->
+			writer.writeLine("/*")
+			descriptionLines.forEach { writer.writeLine(it) }
+			writer.writeLine("*/")
+		}
 		if (isWwwForm(endpoint)) {
 			writer.writeLine("@FormUrlEncoded")
 		}
