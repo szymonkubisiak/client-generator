@@ -42,7 +42,7 @@ class KotlinGeneratorDomain(pkg: PackageConfig): KotlinGeneratorBaseStructs(pkg)
 //			writer.writeLine("//$it")
 //		}
 
-		val name = field.transportName
+		val name = field.key
 		var type = field.type.domainFinalName()
 		if (field.isArray)
 			type = "List<$type>"

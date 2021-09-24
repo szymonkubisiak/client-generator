@@ -42,7 +42,7 @@ class KotlinGeneratorRepo(
 			sortedSecurities?.passed?.forEach { security ->
 				val name = kotlinizeVariableName(security.key)
 				val type = "String"
-				if (endpoint.params.any { param -> param.transportName == security.key }) {
+				if (endpoint.params.any { param -> param.key == security.key }) {
 					writer.writeLine("//WARNING: security clashes with param:")
 					writer.writeLine("//$name: $type,")
 				} else {
@@ -51,7 +51,7 @@ class KotlinGeneratorRepo(
 			}
 
 			for (param in endpoint.params) {
-				val name = kotlinizeVariableName(param.transportName)
+				val name = kotlinizeVariableName(param.key)
 
 				val type = param.type.domainFinalName()+ if (!param.mandatory) "?" else ""
 

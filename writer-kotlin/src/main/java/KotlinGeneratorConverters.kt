@@ -5,7 +5,6 @@ import Namer.transportFinalName
 import Namer.adapterT2DName
 import models.*
 import utils.PackageConfig
-import java.io.PrintWriter
 
 @Suppress("NAME_SHADOWING")
 class KotlinGeneratorConverters(
@@ -50,7 +49,7 @@ class KotlinGeneratorConverters(
 	}
 
 	fun writeFieldT2D(writer: GeneratorWriter, field: Field) {
-		val name = field.transportName
+		val name = field.key
 		// val type = typeResolver.resolveTransportType(field.type)
 		val conversion = resolveTransportToDomainConversion(field.type)
 		val conversionIt = conversion.format("it")
@@ -90,7 +89,7 @@ class KotlinGeneratorConverters(
 	}
 
 	private fun writeFieldD2T(writer: GeneratorWriter, field: Field) {
-		val name = field.transportName
+		val name = field.key
 		// val type = typeResolver.resolveTransportType(field.type)
 		val conversion = resolveDomainToTransportConversion(field.type)
 		val conversionIt = conversion.format("it")
@@ -141,7 +140,7 @@ class KotlinGeneratorConverters(
 	}
 
 	private fun writeFieldD2Map(writer: GeneratorWriter, field: Field) {
-		val name = field.transportName
+		val name = field.key
 		val conversion = resolveDomainToMapFieldConversion(field.type)
 		val conversionIt = conversion.format("it")
 
@@ -154,7 +153,7 @@ class KotlinGeneratorConverters(
 		}
 
 		expression = if (field.isArray) {
-			throw InvalidFieldException("enum type ${field.transportName} cannot be converted to map")
+			throw InvalidFieldException("enum type ${field.key} cannot be converted to map")
 		} else {
 			"$expression.let { $conversionIt }"
 		}

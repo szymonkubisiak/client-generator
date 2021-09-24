@@ -1,7 +1,7 @@
 package models
 
 interface IField {
-	val transportName: String
+	val key: String
 	val type: TypeDescr
 	val isArray: Boolean
 	val mandatory: Boolean
@@ -9,7 +9,7 @@ interface IField {
 }
 
 class Field(
-	override val transportName: String,
+	override val key: String,
 	override val type: TypeDescr,
 	override val isArray: Boolean,
 	override val mandatory: Boolean,

@@ -83,7 +83,7 @@ class OpenApiConverter {
 		val bodyType = pickOneContent(input.content) ?: return null
 
 		val retval = Param(
-			transportName = "body",
+			key = "body",
 			type = bodyType.second.type,
 			isArray = bodyType.second.isArray,
 			mandatory = true,
@@ -96,7 +96,7 @@ class OpenApiConverter {
 	fun parameter2Param(input: Parameter): Param? {
 		val location = parseLocation(input.`in`)
 		val retval = Param(
-			transportName = input.name,
+			key = input.name,
 			type = resolveType(input.schema),
 			isArray = input is ArraySchema,
 			mandatory = input.required,
@@ -131,8 +131,12 @@ class OpenApiConverter {
 		if (input is ObjectSchema && input.type == "object") {
 			val type = typeFactory.getRefType(typeStr)
 			val requireds: List<String> = input.required ?: emptyList()
-			val fields = input.properties.map { oneField ->
-				property2field(oneField.key, oneField.value, requireds.contains(oneField.key))
+			val fields = input.properties.mapNotNull { oneField ->
+				try {
+					property2field(oneField.key, oneField.value, requireds.contains(oneField.key))
+				} catch (ex: Exception) {
+					null
+				}
 			}
 
 			val retval = StructActual(type, fields, input.description)
@@ -144,9 +148,14 @@ class OpenApiConverter {
 
 
 	fun property2field(name: String, input: Schema<*>, required: Boolean): Field {
+		var originalType = resolveType(input)
+//		if(input.extensions?.get("x-primary-id") == true){
+//			originalType = typeFactory.getRefType("ArtifactID")
+//		}
+
 		val retval = Field(
-			transportName = name,
-			type = resolveType(input),
+			key = name,
+			type = originalType,
 			isArray = input is ArraySchema,
 			mandatory = required,
 			description = input.description,

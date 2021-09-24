@@ -15,7 +15,7 @@ class Endpoint(
 }
 
 class Param(
-	override val transportName: String,
+	override val key: String,
 	override val type: TypeDescr,
 	override val isArray: Boolean,
 	override val mandatory: Boolean,

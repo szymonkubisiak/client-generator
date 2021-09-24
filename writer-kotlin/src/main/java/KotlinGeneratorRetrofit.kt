@@ -4,9 +4,7 @@ import Namer.transportFinalName
 import models.Endpoint
 import models.EndpointGroup
 import models.Param
-import models.Tag
 import utils.PackageConfig
-import java.io.PrintWriter
 
 @Suppress("NAME_SHADOWING")
 class KotlinGeneratorRetrofit(
@@ -52,7 +50,7 @@ class KotlinGeneratorRetrofit(
 				val name = Namer.kotlinizeVariableName(security.key)
 				val location = security.location.retrofitAnnotation(security.key)
 				val type = "String"
-				if (endpoint.params.any { param -> param.transportName == security.key }) {
+				if (endpoint.params.any { param -> param.key == security.key }) {
 					writer.writeLine("//WARNING: security clashes with param:")
 					writer.writeLine("//@$location $name: $type,")
 				} else {
@@ -61,8 +59,8 @@ class KotlinGeneratorRetrofit(
 				}
 			}
 			for (param in endpoint.params) {
-				val name = Namer.kotlinizeVariableName(param.transportName)
-				val location = param.location.retrofitAnnotation(param.transportName)
+				val name = Namer.kotlinizeVariableName(param.key)
+				val location = param.location.retrofitAnnotation(param.key)
 				val type = param.type.transportFinalName() + if (!param.mandatory) "?" else ""
 
 				if (isWwwForm(param)) {

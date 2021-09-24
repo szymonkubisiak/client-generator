@@ -30,7 +30,7 @@ class KotlinGeneratorTransport(pkg: PackageConfig) : KotlinGeneratorBaseStructs(
 	}
 
 	fun writeField(writer: GeneratorWriter, field: Field) {
-		val name = field.transportName
+		val name = field.key
 		val rawType = field.type.transportFinalName()
 		val type = if (!field.isArray) rawType else "List<$rawType>"
 		val description = field.description?.let { "\t//$it" } ?: ""

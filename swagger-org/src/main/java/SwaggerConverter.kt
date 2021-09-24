@@ -34,7 +34,7 @@ class SwaggerConverter {
 
 	fun property2field(name: String, input: Property): Field {
 		val retval = Field(
-			transportName = name,
+			key = name,
 			type = resolveType(input),
 			isArray = input is ArrayProperty,
 			mandatory = input.required,
