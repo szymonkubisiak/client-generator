@@ -61,8 +61,8 @@ class KotlinGeneratorRetrofit(
 				}
 			}
 			for (param in endpoint.params) {
-				val name = param.transportName
-				val location = param.location.retrofitAnnotation(name)
+				val name = Namer.kotlinizeVariableName(param.transportName)
+				val location = param.location.retrofitAnnotation(param.transportName)
 				val type = param.type.transportFinalName() + if (!param.mandatory) "?" else ""
 
 				if (isWwwForm(param)) {

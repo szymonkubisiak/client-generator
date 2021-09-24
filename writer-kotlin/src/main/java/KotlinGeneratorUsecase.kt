@@ -49,7 +49,7 @@ class KotlinGeneratorUsecase(
 				}
 			}
 			for (param in endpoint.params) {
-				val name = param.transportName
+				val name = kotlinizeVariableName(param.transportName)
 
 				val type = param.type.domainFinalName() + if (!param.mandatory) "? = null" else ""
 

@@ -60,7 +60,7 @@ class KotlinGeneratorUsecaseImpl(
 				}
 			}
 			for (param in endpoint.params) {
-				val name = param.transportName
+				val name = kotlinizeVariableName(param.transportName)
 
 				val type = param.type.domainFinalName() + if (!param.mandatory) "?" else ""
 
@@ -89,7 +89,7 @@ class KotlinGeneratorUsecaseImpl(
 				}
 			}
 			for (param in endpoint.params) {
-				val name = param.transportName
+				val name = kotlinizeVariableName(param.transportName)
 				writer.writeLine("$name,")
 			}
 			writer.writeLine(")")

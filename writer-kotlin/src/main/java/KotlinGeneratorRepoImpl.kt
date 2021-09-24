@@ -122,7 +122,7 @@ class KotlinGeneratorRepoImpl(
 					}
 				}
 				for (param in endpoint.params) {
-					val name = param.transportName
+					val name = kotlinizeVariableName(param.transportName)
 					val isForm = KotlinGeneratorRetrofit.isWwwForm(param)
 					val conversionIt = if (!isForm)
 						KotlinGeneratorConverters.resolveDomainToTransportConversion(param.type).format("it")
@@ -208,7 +208,7 @@ class KotlinGeneratorRepoImpl(
 	private fun writeParams(writer: IndentedWriter, params: List<Param>) {
 		IndentedWriter(writer).use { writer ->
 			for (param in params) {
-				val name = param.transportName
+				val name = kotlinizeVariableName(param.transportName)
 				val type = param.type.domainFinalName() + if (!param.mandatory) "?" else ""
 				writer.writeLine("$name: $type,")
 			}
