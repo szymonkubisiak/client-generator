@@ -1,5 +1,4 @@
 import Namer.domainFinalName
-import Namer.kotlinizeVariableName
 import Namer.repoClassName
 import Namer.repoMethodName
 import Namer.usecaseClassName

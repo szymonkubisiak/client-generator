@@ -2,8 +2,8 @@ package models
 
 class Security(
 	override val key: String,
-	val location: Param.Location,
-) : IField {
+	override val location: Param.Location,
+) : IParam {
 	override val type: TypeDescr
 		get() = BuiltinTypeDescr("string", null)
 	override val isArray: Boolean = false

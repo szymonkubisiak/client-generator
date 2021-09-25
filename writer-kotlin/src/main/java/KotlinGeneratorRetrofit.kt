@@ -1,9 +1,7 @@
 import Namer.serviceClassName
 import Namer.serviceMethodName
 import Namer.transportFinalName
-import models.Endpoint
-import models.EndpointGroup
-import models.Param
+import models.*
 import utils.PackageConfig
 
 @Suppress("NAME_SHADOWING")
@@ -46,21 +44,9 @@ class KotlinGeneratorRetrofit(
 		writer.writeLine("@" + endpoint.retrofitAnnotation() + "(\"" + endpoint.path.trimStart('/') + "\")")
 		writer.writeLine("fun " + endpoint.serviceMethodName() + "(")
 		IndentedWriter(writer).use { writer ->
-			endpoint.security?.forEach { security ->
-				val name = Namer.kotlinizeVariableName(security.key)
-				val location = security.location.retrofitAnnotation(security.key)
-				val type = "String"
-				if (endpoint.params.any { param -> param.key == security.key }) {
-					writer.writeLine("//WARNING: security clashes with param:")
-					writer.writeLine("//@$location $name: $type,")
-				} else {
-					writer.writeLine("@$location $name: $type,")
-
-				}
-			}
-			for (param in endpoint.params) {
+			((endpoint.security ?: emptyList()) + endpoint.params).forEach { param ->
 				val name = Namer.kotlinizeVariableName(param.key)
-				val location = param.location.retrofitAnnotation(param.key)
+				val location = param.retrofitAnnotation()
 				val type = param.type.transportFinalName() + if (!param.mandatory) "?" else ""
 
 				if (isWwwForm(param)) {
@@ -86,17 +72,17 @@ class KotlinGeneratorRetrofit(
 			return input.params.any(::isWwwForm)
 		}
 
-		fun isWwwForm(input: Param): Boolean {
+		fun isWwwForm(input: IParam): Boolean {
 			val bodyParam = input.location as? Param.Location.BODY ?: return false
 			return bodyParam.mediaType == mediaTypeWwwForm
 		}
 
-		fun Param.Location.retrofitAnnotation(name: String) =
-			when (this) {
-				Param.Location.PATH -> "Path(\"$name\")"
-				Param.Location.QUERY -> "Query(\"$name\")"
+		fun IParam.retrofitAnnotation() =
+			when (location) {
+				Param.Location.PATH -> "Path(\"$key\")"
+				Param.Location.QUERY -> "Query(\"$key\")"
 				is Param.Location.BODY -> "Body"
-				Param.Location.HEADER -> "Header(\"$name\")"
+				Param.Location.HEADER -> "Header(\"$key\")"
 				Param.Location.COOKIE -> "Header(\"Cookie\")"
 			}
 

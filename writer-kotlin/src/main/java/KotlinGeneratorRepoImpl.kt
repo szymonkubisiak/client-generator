@@ -86,17 +86,8 @@ class KotlinGeneratorRepoImpl(
 
 			writer.writeLine("return http." + endpoint.repoMethodName() + "(")
 
+			writeParamsCalls(writer, endpoint.security?: emptyList())
 			IndentedWriter(writer).use { writer ->
-				endpoint.security?.forEach { security ->
-					val name = kotlinizeVariableName(security.key)
-					val type = "String"
-					if (endpoint.params.any { param -> param.key == security.key }) {
-						writer.writeLine("//WARNING: security clashes with param:")
-						writer.writeLine("//$name,")
-					} else {
-						writer.writeLine("$name,")
-					}
-				}
 				for (param in endpoint.params) {
 					val name = kotlinizeVariableName(param.key)
 					val isForm = KotlinGeneratorRetrofit.isWwwForm(param)
