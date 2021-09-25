@@ -1,5 +1,4 @@
 import Namer.domainFinalName
-import Namer.kotlinizeVariableName
 import Namer.repoMethodName
 import Namer.usecaseClassName
 import models.*
@@ -35,15 +34,7 @@ class KotlinGeneratorUsecase(
 		writer.writeLine("")
 
 		writer.writeLine("fun " + endpoint.repoMethodName() + "(")
-		IndentedWriter(writer).use { writer ->
-			for (param in endpoint.security.passed() + endpoint.params) {
-				val name = kotlinizeVariableName(param.key)
-
-				val type = param.type.domainFinalName() + if (!param.mandatory) "? = null" else ""
-
-				writer.writeLine("$name: $type,")
-			}
-		}
+		writeParamsDefinitions(writer, endpoint.security.passed() + endpoint.params, true)
 		endpoint.response?.also {
 			val rawType = it.type.domainFinalName()
 			val type = if (!it.isArray) rawType else "List<$rawType>"
