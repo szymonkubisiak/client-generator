@@ -56,10 +56,7 @@ class KotlinGeneratorUsecaseImpl(
 		}
 		IndentedWriter(writer).use { writer ->
 			writer.writeLine("return repo." + endpoint.repoMethodName() + "(")
-			for (param in endpoint.security.passed() + endpoint.params) {
-				val name = kotlinizeVariableName(param.key)
-				writer.writeLine("$name,")
-			}
+			writeParamsCalls (writer, endpoint.security.passed() + endpoint.params)
 			writer.writeLine(")")
 		}
 		writer.writeLine("}")

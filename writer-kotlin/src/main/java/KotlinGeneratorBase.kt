@@ -41,6 +41,17 @@ abstract class KotlinGeneratorBase(
 			}
 		}
 
+		fun writeParamsCalls(writer: IndentedWriter, params: List<IField> ) {
+			if(params.isNullOrEmpty()) return
+			//indentation disabled to replicate previous bug
+			//IndentedWriter(writer).use { writer ->
+				for (param in params) {
+					val name = kotlinizeVariableName(param.key)
+					writer.writeLine("$name,")
+				}
+			//}
+		}
+
 		fun List<Security>?.handled() = this?.filter { it.key == jwtToken || it.key == xsrfToken } ?: emptyList()
 		fun List<Security>?.passed() = this?.filter { it.key != jwtToken && it.key != xsrfToken } ?: emptyList()
 		fun List<Security>?.hasJwt() = this?.any { it.key == jwtToken } ?: false
