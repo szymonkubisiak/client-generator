@@ -50,7 +50,7 @@ class KotlinGeneratorUsecaseImpl(
 		endpoint.response?.also {
 			val rawType = it.type.domainFinalName()
 			val type = if (!it.isArray) rawType else "List<$rawType>"
-			writer.writeLine("): Single<$type>{")
+			writer.writeLine("): Single<$type> {")
 		} ?: run {
 			writer.writeLine("): Completable{")
 		}
