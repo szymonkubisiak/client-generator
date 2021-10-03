@@ -8,12 +8,17 @@ import models.Api
 import utils.Package
 import utils.PackageConfig
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.PrintWriter
 import java.util.*
 
 object Main {
 
-	val properties = FileInputStream("app.config").use {
+	val properties = try {
+		FileInputStream("private.config")
+	} catch (ex: FileNotFoundException) {
+		FileInputStream("app.config")
+	}.use {
 			Properties().apply {
 				load(it)
 			}
