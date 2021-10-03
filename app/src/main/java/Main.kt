@@ -7,9 +7,17 @@ import io.swagger.v3.parser.OpenAPIV3Parser
 import models.Api
 import utils.Package
 import utils.PackageConfig
+import java.io.FileInputStream
 import java.io.PrintWriter
+import java.util.*
 
 object Main {
+
+	val properties = FileInputStream("app.config").use {
+			Properties().apply {
+				load(it)
+			}
+		}
 
 	val kotlinT: KotlinGeneratorTransport
 	val kotlinD: KotlinGeneratorDomain
@@ -24,9 +32,12 @@ object Main {
 	val kotlinGeneratorUsecaseModule: KotlinGeneratorUsecaseModule
 
 	init {
+		val outputDir = Package(*properties.getProperty("app.kotlin.outputdir").split('/').toTypedArray())
+		val outputPackage = Package(*properties.getProperty("app.kotlin.package").split('.').toTypedArray())
+
 		//TODO: move those to some config
 		val generatedPrefix = "generated"
-		val master = PackageConfig(rootDir = Package("out"), project = Package("com", "example"), suffix = Package(generatedPrefix), module = Package.dummy)
+		val master = PackageConfig(rootDir = outputDir, project = outputPackage, suffix = Package(generatedPrefix), module = Package.dummy)
 		val transport = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "models"))
 		kotlinT = KotlinGeneratorTransport(transport)
 
@@ -63,8 +74,8 @@ object Main {
 	@JvmStatic
 	fun main(args: Array<String>) {
 		println("Hello World!")
-		val openAPI: OpenAPI = OpenAPIV3Parser().read("src/test/resources/3.0/petstore.json")
-//		val openAPI: OpenAPI = OpenAPIV3Parser().read("src/test/resources/3.0/types.json")
+		val inputfile = properties.getProperty("app.inputfile")
+		val openAPI: OpenAPI = OpenAPIV3Parser().read(inputfile)
 		val api = OpenApiConverter().swagger2api(openAPI)
 
 		writeAllToFiles(api)
