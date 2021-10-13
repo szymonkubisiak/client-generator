@@ -148,10 +148,10 @@ class OpenApiConverter {
 
 
 	fun property2field(name: String, input: Schema<*>, required: Boolean): Field {
-		var originalType = resolveType(input)
 //		if(input.extensions?.get("x-primary-id") == true){
 //			originalType = typeFactory.getRefType("ArtifactID")
 //		}
+		val originalType = resolveType(input)
 
 		val retval = Field(
 			key = name,
@@ -159,6 +159,7 @@ class OpenApiConverter {
 			isArray = input is ArraySchema,
 			mandatory = required,
 			description = input.description,
+			isStringmap = input.additionalProperties != null
 		)
 
 		return retval

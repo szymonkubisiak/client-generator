@@ -64,6 +64,8 @@ class KotlinGeneratorConverters(
 
 		expression = if (field.isArray) {
 			"$expression.map { $conversionIt }"
+		} else if (field.isStringmap) {
+			"$expression.mapValues { " + conversion.format("it.value") + " }"
 		} else {
 			"$expression.let { $conversionIt }"
 		}
@@ -105,6 +107,8 @@ class KotlinGeneratorConverters(
 
 		expression = if (field.isArray) {
 			"$expression.map { $conversionIt }"
+		} else if (field.isStringmap) {
+			"$expression.mapValues { " + conversion.format("it.value") + " }"
 		} else {
 			"$expression.let { $conversionIt }"
 		}
@@ -115,7 +119,7 @@ class KotlinGeneratorConverters(
 	private fun writeActualStructD2Map(writer: GeneratorWriter, model: StructActual) {
 		try {
 			model.fields.forEach {
-				if(it.isArray) return
+				if(it.isArray || it.isStringmap) return
 				resolveDomainToMapFieldConversion(it.type)
 			}
 		} catch (ex: InvalidFieldException) {

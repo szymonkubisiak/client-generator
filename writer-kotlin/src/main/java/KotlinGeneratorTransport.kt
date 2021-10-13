@@ -32,7 +32,11 @@ class KotlinGeneratorTransport(pkg: PackageConfig) : KotlinGeneratorBaseStructs(
 	fun writeField(writer: GeneratorWriter, field: Field) {
 		val name = field.key
 		val rawType = field.type.transportFinalName()
-		val type = if (!field.isArray) rawType else "List<$rawType>"
+		val type = when {
+			field.isArray -> "List<$rawType>"
+			field.isStringmap -> "Map<String, $rawType>"
+			else -> rawType
+		}
 		val description = field.description?.let { "\t//$it" } ?: ""
 
 		//all transport fields are made nullable to work around parser not detecting missing mandatories

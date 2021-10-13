@@ -43,9 +43,12 @@ class KotlinGeneratorDomain(pkg: PackageConfig): KotlinGeneratorBaseStructs(pkg)
 //		}
 
 		val name = field.key
-		var type = field.type.domainFinalName()
-		if (field.isArray)
-			type = "List<$type>"
+		val rawType = field.type.domainFinalName()
+		var type = when {
+			field.isArray -> "List<$rawType>"
+			field.isStringmap -> "Map<String, $rawType>"
+			else -> rawType
+		}
 		if (!field.mandatory)
 			type = "$type?"
 		val description = field.description?.let { "\t//$it" } ?: ""

@@ -9,4 +9,5 @@ class Security constructor(
 	override val isArray: Boolean = false
 	override val mandatory: Boolean = true
 	override val description: String? = null
+	override val isStringmap: Boolean = false
 }

@@ -6,6 +6,7 @@ interface IField {
 	val isArray: Boolean
 	val mandatory: Boolean
 	val description: String?
+	val isStringmap: Boolean
 }
 
 class Field constructor(
@@ -13,5 +14,6 @@ class Field constructor(
 	override val type: TypeDescr,
 	override val isArray: Boolean,
 	override val mandatory: Boolean,
-	override val description: String?
+	override val description: String?,
+	override val isStringmap: Boolean = false,
 ) : IField
