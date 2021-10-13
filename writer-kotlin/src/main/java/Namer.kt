@@ -20,12 +20,10 @@ object Namer {
 		}
 	}
 
-	fun RefTypeDescr.domainFinalName() = this.key// + "Dom"
-
 	fun TypeDescr.domainFinalName():String {
 		return when (this) {
 			is BuiltinTypeDescr -> TypeResolver.instance.resolveDomainType(this)
-			is RefTypeDescr -> this.domainFinalName()
+			is RefTypeDescr -> this.key
 		}
 	}
 

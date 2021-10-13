@@ -1,6 +1,6 @@
 package models
 
-class Param(
+class Param constructor(
 	override val key: String,
 	override val type: TypeDescr,
 	override val isArray: Boolean,

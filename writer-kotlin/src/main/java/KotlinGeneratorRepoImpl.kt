@@ -90,8 +90,8 @@ class KotlinGeneratorRepoImpl(
 			IndentedWriter(writer).use { writer ->
 				for (param in endpoint.params) {
 					val name = kotlinizeVariableName(param.key)
-					val isForm = KotlinGeneratorRetrofit.isWwwForm(param)
-					val conversionIt = if (!isForm)
+					val isWwwForm = KotlinGeneratorRetrofit.isWwwForm(param)
+					val conversionIt = if (!isWwwForm)
 						KotlinGeneratorConverters.resolveDomainToTransportConversion(param.type).format("it")
 					else
 						KotlinGeneratorConverters.resolveDomainToMapConversion(param.type).format("it")

@@ -46,14 +46,19 @@ class KotlinGeneratorRetrofit(
 		IndentedWriter(writer).use { writer ->
 			((endpoint.security ?: emptyList()) + endpoint.params).forEach { param ->
 				val name = Namer.kotlinizeVariableName(param.key)
-				val location = param.retrofitAnnotation()
-				val type = param.type.transportFinalName() + if (!param.mandatory) "?" else ""
+				val isWwwForm = isWwwForm(param)
 
-				if (isWwwForm(param)) {
-					writer.writeLine("@FieldMap(encoded = false) $name: Map<String, String?>,")
-				} else {
-					writer.writeLine("@$location $name: $type,")
-				}
+				val location = if (isWwwForm)
+					"FieldMap(encoded = false)"
+				else
+					param.retrofitAnnotation()
+
+				val type = if (isWwwForm)
+					"Map<String, String?>"
+				else
+					(param.type.transportFinalName() + if (!param.mandatory) "?" else "")
+
+				writer.writeLine("@$location $name: $type,")
 			}
 		}
 		return endpoint.response?.also {

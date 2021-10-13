@@ -1,6 +1,6 @@
 package models
 
-class Security(
+class Security constructor(
 	override val key: String,
 	override val location: Param.Location,
 ) : IParam {

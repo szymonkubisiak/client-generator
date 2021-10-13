@@ -8,7 +8,7 @@ interface IField {
 	val description: String?
 }
 
-class Field(
+class Field constructor(
 	override val key: String,
 	override val type: TypeDescr,
 	override val isArray: Boolean,
