@@ -130,8 +130,10 @@ class OpenApiConverter {
 
 		if (input is ObjectSchema && input.type == "object") {
 			val artificialID = input.extensions?.let {
-				it.get("x-artificialID") as? Boolean
-			} ?: false
+				it.get("x-artificialID") as? String
+			}?.let {
+				typeFactory.getSimpleType(it, null)
+			}
 			val type = typeFactory.getRefType(typeStr)
 			val requireds: List<String> = input.required ?: emptyList()
 			val fields = input.properties.mapNotNull { oneField ->
