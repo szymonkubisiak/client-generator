@@ -8,6 +8,7 @@ class StructActual constructor(
 	override val type: RefTypeDescr,
 	val fields: List<Field>,
 	val description: String?,
+	val artificialID: Boolean = false,
 ) : Struct() {
 	override fun toString(): String {
 		return "Struct " + type.toString()

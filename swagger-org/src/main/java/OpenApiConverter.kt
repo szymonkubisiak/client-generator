@@ -129,6 +129,9 @@ class OpenApiConverter {
 		}
 
 		if (input is ObjectSchema && input.type == "object") {
+			val artificialID = input.extensions?.let {
+				it.get("x-artificialID") as? Boolean
+			} ?: false
 			val type = typeFactory.getRefType(typeStr)
 			val requireds: List<String> = input.required ?: emptyList()
 			val fields = input.properties.mapNotNull { oneField ->
@@ -139,7 +142,7 @@ class OpenApiConverter {
 				}
 			}
 
-			val retval = StructActual(type, fields, input.description)
+			val retval = StructActual(type, fields, input.description, artificialID)
 			type.definition = retval
 			return retval
 		}

@@ -35,6 +35,12 @@ class KotlinGeneratorDomain(pkg: PackageConfig): KotlinGeneratorBaseStructs(pkg)
 			}
 		}
 		writer.writeLine(")")
+
+		if (model.artificialID) {
+			writer.writeLine("{")
+			writer.writeLine("\tdata class ID(val internal: Long)")
+			writer.writeLine("}")
+		}
 	}
 
 	fun writeField(writer: GeneratorWriter, field: Field) {
