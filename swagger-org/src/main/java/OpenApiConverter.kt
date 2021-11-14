@@ -185,7 +185,7 @@ class OpenApiConverter {
 				resolveType(inp.items)
 			}
 			"string", "number", "integer", "boolean" ->
-				typeFactory.getSimpleType(input.type, input.format)
+				typeFactory.getSimpleType(input.effectiveType, input.effectiveFormat)
 			"object", "ref", null -> {
 				input.`$ref`?.also {
 					return refToStructTypeDescr(it)
@@ -211,4 +211,14 @@ class OpenApiConverter {
 	}
 
 	val objPrefix = "#/components/schemas/"
+
+	private val <T> Schema<T>.effectiveType: String
+		get() {
+			return (this.extensions?.get("x-type") as? String) ?: this.type
+		}
+
+	private val <T> Schema<T>.effectiveFormat: String?
+		get() {
+			return (this.extensions?.get("x-format") as? String) ?: this.format
+		}
 }
