@@ -3,12 +3,17 @@ import models.*
 import utils.PackageConfig
 
 @Suppress("NAME_SHADOWING")
-class KotlinGeneratorDomain(pkg: PackageConfig): KotlinGeneratorBaseStructs(pkg) {
+class KotlinGeneratorDomain(
+	pkg: PackageConfig,
+	val manualModels: PackageConfig,
+) : KotlinGeneratorBaseStructs(pkg) {
 
 	override fun fileName(type: RefTypeDescr): String = type.domainFinalName()
 
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
 		writer.writeLine("package " + pkg.toPackage())
+		writer.writeLine("")
+		writer.writeLine("import " + manualModels.toPackage() + ".*")
 		writer.writeLine("")
 		when(model){
 			is StructActual -> writeActualStruct(writer, model)

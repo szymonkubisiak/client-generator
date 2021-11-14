@@ -43,14 +43,17 @@ object Main {
 		//TODO: move those to some config
 		val generatedPrefix = "generated"
 		val master = PackageConfig(rootDir = outputDir, project = outputPackage, suffix = Package(generatedPrefix), module = Package.dummy)
+
+		val manualModels = master.copy(module = Package("domain"), suffix = Package("models"))
+
 		val transport = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "models"))
 		kotlinT = KotlinGeneratorTransport(transport)
 
 		val domain = master.copy(module = Package("domain"), suffix = Package(generatedPrefix, "models"))
-		kotlinD = KotlinGeneratorDomain(domain)
+		kotlinD = KotlinGeneratorDomain(domain, manualModels)
 
 		val converters = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "converters"))
-		kotlinT2D = KotlinGeneratorConverters(converters, kotlinT.pkg, kotlinD.pkg)
+		kotlinT2D = KotlinGeneratorConverters(converters, kotlinT.pkg, kotlinD.pkg, manualModels)
 
 		val retrofit = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "retrofit"))
 		kotlinRetrofit = KotlinGeneratorRetrofit(retrofit, kotlinT.pkg)

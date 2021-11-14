@@ -11,6 +11,7 @@ class KotlinGeneratorConverters(
 	pkg: PackageConfig,
 	val conn: PackageConfig,
 	val domain: PackageConfig,
+	val manualModels: PackageConfig,
 ) : KotlinGeneratorBaseStructs(pkg) {
 
 	override fun fileName(type: RefTypeDescr): String = type.key
@@ -170,6 +171,7 @@ class KotlinGeneratorConverters(
 		writer.writeLine("")
 		writer.writeLine("import " + conn.toPackage() + ".*")
 		writer.writeLine("import " + domain.toPackage() + ".*")
+		writer.writeLine("import " + manualModels.toPackage() + ".*")
 		writer.writeLine("")
 	}
 
