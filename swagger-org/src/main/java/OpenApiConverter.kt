@@ -187,8 +187,16 @@ class OpenApiConverter {
 			"string", "number", "integer", "boolean" ->
 				typeFactory.getSimpleType(input.type, input.format)
 			"object", "ref", null -> {
-				val ref = input.`$ref` ?: (input.additionalProperties as? Schema<*>)?.`$ref`
-				refToStructTypeDescr(ref!!)
+				input.`$ref`?.also {
+					return refToStructTypeDescr(it)
+				}
+
+				if (input is MapSchema) {
+					(input.additionalProperties as? Schema<*>)?.also {
+						return resolveType(it)
+					}
+				}
+				throw IllegalArgumentException()
 			}
 			else ->
 				throw NotImplementedError("unknown type")
