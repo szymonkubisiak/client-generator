@@ -28,7 +28,13 @@ class OpenApiConverter {
 	}
 
 	fun path2Endpoints(path: String, input: PathItem): List<Endpoint> {
-		return input.readOperationsMap().map { operation2Endpoint(path, it.key.toString(), it.value) }
+		return input.readOperationsMap().mapNotNull {
+			try {
+				operation2Endpoint(path, it.key.toString(), it.value)
+			} catch (ex: Exception) {
+				null
+			}
+		}
 	}
 
 	fun operation2Endpoint(path: String, operation: String, input: Operation): Endpoint {
@@ -196,7 +202,7 @@ class OpenApiConverter {
 						return resolveType(it)
 					}
 				}
-				throw IllegalArgumentException()
+				throw IllegalArgumentException("unsupported type: " + input.type)
 			}
 			else ->
 				throw NotImplementedError("unknown type")
