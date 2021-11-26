@@ -22,8 +22,8 @@ class KotlinGeneratorRepoImpl(
 		pkg.openFile("JwtProvider.kt").use { writer ->
 			writer.writeLine("package " + pkg.toPackage())
 			writer.writeLine("")
-			writer.writeLine("import io.reactivex.Completable")
-			writer.writeLine("import io.reactivex.Single")
+			writer.writeLine("import io.reactivex.rxjava3.core.Completable")
+			writer.writeLine("import io.reactivex.rxjava3.core.Single")
 			writer.writeLine("")
 			writer.writeLine("interface JwtProvider{")
 			IndentedWriter(writer).use { writer ->
@@ -38,8 +38,8 @@ class KotlinGeneratorRepoImpl(
 	override fun writeEndpointInternal(writer: GeneratorWriter, groupName: EndpointGroup, endpoints: List<Endpoint>) {
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
-		writer.writeLine("import io.reactivex.Single")
-		writer.writeLine("import io.reactivex.Completable")
+		writer.writeLine("import io.reactivex.rxjava3.core.Single")
+		writer.writeLine("import io.reactivex.rxjava3.core.Completable")
 		writer.writeLine("import " + retrofit.toPackage() + ".*")
 		writer.writeLine("import " + t2d.toPackage() + ".*")
 		writer.writeLine("import " + domain.toPackage() + ".*")

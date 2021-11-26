@@ -16,8 +16,8 @@ class KotlinGeneratorRepo(
 	override fun writeEndpointInternal(writer: GeneratorWriter, groupName: EndpointGroup, endpoints: List<Endpoint>) {
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
-		writer.writeLine("import io.reactivex.Single")
-		writer.writeLine("import io.reactivex.Completable")
+		writer.writeLine("import io.reactivex.rxjava3.core.Single")
+		writer.writeLine("import io.reactivex.rxjava3.core.Completable")
 		writer.writeLine("import " + domain.toPackage() + ".*")
 		writer.writeLine("")
 
