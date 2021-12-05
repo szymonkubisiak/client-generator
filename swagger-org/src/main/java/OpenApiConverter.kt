@@ -107,7 +107,8 @@ class OpenApiConverter {
 			isArray = input is ArraySchema,
 			mandatory = input.required,
 			description = input.description,
-			location = location
+			location = location,
+			defaultValue = input.schema.default,
 		)
 		return retval
 	}

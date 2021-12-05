@@ -8,6 +8,7 @@ class Param constructor(
 	override val description: String?,
 	override val location: Location,
 	override val isStringmap: Boolean = false,
+	val defaultValue: Any? = null,
 ) : IParam {
 	sealed class Location {
 		object PATH : Location()
