@@ -27,8 +27,8 @@ class KotlinGeneratorRepoImpl(
 			writer.writeLine("")
 			writer.writeLine("interface JwtProvider{")
 			IndentedWriter(writer).use { writer ->
-				writer.writeLine("fun <T> executeWithJwt(callee: (jwt: String) -> Single<T>): Single<T>")
-				writer.writeLine("fun <T> executeWithJwtAndXsrf(callee: (jwt: String, xsrf: String) -> Single<T>): Single<T>")
+				writer.writeLine("fun <T: Any> executeWithJwt(callee: (jwt: String) -> Single<T>): Single<T>")
+				writer.writeLine("fun <T: Any> executeWithJwtAndXsrf(callee: (jwt: String, xsrf: String) -> Single<T>): Single<T>")
 				writer.writeLine("fun executeWithJwtAndXsrf(callee: (jwt: String, xsrf: String) -> Completable): Completable")
 			}
 			writer.writeLine("}")
