@@ -46,6 +46,7 @@ class TypeResolver private constructor(){
 		addType("string", null, "String")
 		// – full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21
 		addType("string", "Date", "String")
+		addType("string", "date", "String")
 		// – the date-time notation as defined by RFC 3339, section 5.6, for example, 2017-07-21T17:32:28Z
 		addType("string", "date-time", "String")
 		// – a hint to UIs to mask the input
