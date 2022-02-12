@@ -143,7 +143,7 @@ class OpenApiConverter {
 			}
 			val type = typeFactory.getRefType(typeStr)
 			val requireds: List<String> = input.required ?: emptyList()
-			val fields = input.properties.mapNotNull { oneField ->
+			val fields = (input.properties?: emptyMap()).mapNotNull { oneField ->
 				try {
 					property2field(oneField.key, oneField.value, requireds.contains(oneField.key))
 				} catch (ex: Exception) {
