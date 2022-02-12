@@ -9,7 +9,7 @@ interface IField {
 	val isStringmap: Boolean
 }
 
-class Field constructor(
+data class Field constructor(
 	override val key: String,
 	override val type: TypeDescr,
 	override val isArray: Boolean,

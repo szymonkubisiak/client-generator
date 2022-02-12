@@ -146,6 +146,7 @@ class OpenApiConverter {
 			val fields = (input.properties?: emptyMap()).mapNotNull { oneField ->
 				try {
 					property2field(oneField.key, oneField.value, requireds.contains(oneField.key))
+						.forceTypeOnID(artificialID, typeStr)
 				} catch (ex: Exception) {
 					null
 				}
@@ -158,6 +159,27 @@ class OpenApiConverter {
 		throw NotImplementedError("unknown type")
 	}
 
+	//For some structs the id field cannot be properly annotated in api-docs (eg, because it's inherited),
+	//so I've arbitrarily decided that if a struct has artificial ID and a field named "id" that's a mistake to be fixed
+	private fun Field.forceTypeOnID(artificialID: BuiltinTypeDescr?, encompassingType: String): Field {
+		val field = this
+
+		if (artificialID == null //the encompassing type doesn't have own id type
+			|| field.key != "id" //field name doesn't look like id
+			|| field.type !is BuiltinTypeDescr //field is not of a simple type
+			|| field.type.key != artificialID.key //"id" field is of different type than artificial ID (eg one is number and another string)
+		)
+			return field
+
+		val IDFormat = "ID:${encompassingType}.ID"
+
+		//this one is correctly described
+		if ((field.type as BuiltinTypeDescr).format == IDFormat)
+			return field
+
+		val retval = field.copy(type = typeFactory.getSimpleType(field.type.key, IDFormat))
+		return retval
+	}
 
 	fun property2field(name: String, input: Schema<*>, required: Boolean): Field {
 		val originalType = resolveType(input)
