@@ -160,9 +160,6 @@ class OpenApiConverter {
 
 
 	fun property2field(name: String, input: Schema<*>, required: Boolean): Field {
-//		if(input.extensions?.get("x-primary-id") == true){
-//			originalType = typeFactory.getRefType("ArtifactID")
-//		}
 		val originalType = resolveType(input)
 
 		val retval = Field(
@@ -175,13 +172,6 @@ class OpenApiConverter {
 		)
 
 		return retval
-	}
-
-	@JvmName("resolveTypeNullable")
-	fun resolveType(input: Schema<*>?): TypeDescr? {
-		return if (input != null)
-			resolveType(input)
-		else null
 	}
 
 	fun resolveType(input: Schema<*>): TypeDescr {
