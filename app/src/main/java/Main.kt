@@ -5,6 +5,7 @@ import io.swagger.parser.util.InlineModelResolver
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.parser.OpenAPIV3Parser
 import models.Api
+import models.StructActual
 import utils.Package
 import utils.PackageConfig
 import java.io.FileInputStream
@@ -85,6 +86,16 @@ object Main {
 		val inputfile = properties.getProperty("app.inputfile")
 		val openAPI: OpenAPI = OpenAPIV3Parser().read(inputfile)
 		val api = OpenApiConverter().swagger2api(openAPI)
+
+		val typesWithArtificialId = api.structs
+			.mapNotNull { it as? StructActual }
+			.filter { it.artificialID != null }
+
+		typesWithArtificialId.forEach {
+			val transportType = TypeResolver.instance.resolveTransportType(it.artificialID!!)
+			TypeResolver.instance.
+				addType(it.artificialID!!.key, "ID:${it.type.key}.ID", transportType, "${it.type.key}.ID", "${it.type.key}.ID(%s)", "%s.internal")
+		}
 
 		writeAllToFiles(api)
 		//writeSampleToOut(api)
