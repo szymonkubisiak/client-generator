@@ -6,21 +6,17 @@ class Api(
 ) {
 
 	init {
-		if (paths != null) {
-			paths.forEach { endpoint ->
-
-				(endpoint.response?.type as? RefTypeDescr)?.definition?.markIncoming()
-
-				endpoint.params
-					.map { it.type }
-					.filterIsInstance<RefTypeDescr>()
-					.forEach {
-						if (endpoint.isWwwForm())
-							it.definition?.markOutgoingAsForm()
-						else
-							it.definition?.markOutgoing()
-					}
-			}
+		paths.forEach { endpoint ->
+			(endpoint.response?.type as? RefTypeDescr)?.definition?.markIncoming()
+			endpoint.params
+				.map { it.type }
+				.filterIsInstance<RefTypeDescr>()
+				.forEach {
+					if (endpoint.isWwwForm())
+						it.definition?.markOutgoingAsForm()
+					else
+						it.definition?.markOutgoing()
+				}
 		}
 	}
 
