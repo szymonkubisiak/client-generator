@@ -23,10 +23,12 @@ class KotlinGeneratorConverters(
 		when (model) {
 			is StructActual -> {
 				writeImports(writer)
-				writeActualStructT2D(writer, model)
-				writer.writeLine("")
-				writeActualStructD2T(writer, model)
-				writeActualStructD2Map(writer, model)
+				if(model.incoming)
+					writeActualStructT2D(writer, model)
+				if(model.outgoing)
+					writeActualStructD2T(writer, model)
+				if(model.outgoingAsForm)
+					writeActualStructD2Map(writer, model)
 			}
 			is StructEnum -> return
 		}
