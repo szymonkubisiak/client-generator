@@ -2,6 +2,10 @@ package models
 
 sealed class Struct {
 	abstract val type: RefTypeDescr
+
+	var incoming = false
+	var outgoing = false
+	var outgoingAsForm = false
 }
 
 class StructActual constructor(
