@@ -38,7 +38,7 @@ class KotlinGeneratorRetrofit(
 			descriptionLines.forEach { writer.writeLine(it) }
 			writer.writeLine("*/")
 		}
-		if (isWwwForm(endpoint)) {
+		if (endpoint.isWwwForm()) {
 			writer.writeLine("@FormUrlEncoded")
 		}
 		writer.writeLine("@" + endpoint.retrofitAnnotation() + "(\"" + endpoint.path.trimStart('/') + "\")")
@@ -46,7 +46,7 @@ class KotlinGeneratorRetrofit(
 		IndentedWriter(writer).use { writer ->
 			((endpoint.security ?: emptyList()) + endpoint.params).forEach { param ->
 				val name = Namer.kotlinizeVariableName(param.key)
-				val isWwwForm = isWwwForm(param)
+				val isWwwForm = param.isWwwForm()
 
 				val location = if (isWwwForm)
 					"FieldMap(encoded = false)"
@@ -71,16 +71,6 @@ class KotlinGeneratorRetrofit(
 	}
 
 	companion object {
-		private const val mediaTypeWwwForm = "application/x-www-form-urlencoded"
-
-		fun isWwwForm(input: Endpoint): Boolean {
-			return input.params.any(::isWwwForm)
-		}
-
-		fun isWwwForm(input: IParam): Boolean {
-			val bodyParam = input.location as? Param.Location.BODY ?: return false
-			return bodyParam.mediaType == mediaTypeWwwForm
-		}
 
 		fun IParam.retrofitAnnotation() =
 			when (location) {

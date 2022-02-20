@@ -12,5 +12,9 @@ class Endpoint(
 	val description: String?,
 ) : EndpointGroup {
 	override val key = name
+
+	fun isWwwForm(): Boolean {
+			return params.any(Param::isWwwForm)
+		}
 }
 
