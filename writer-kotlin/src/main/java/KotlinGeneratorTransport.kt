@@ -7,7 +7,7 @@ class KotlinGeneratorTransport(pkg: PackageConfig) : KotlinGeneratorBaseStructs(
 
 	override fun fileName(type: RefTypeDescr): String = type.transportFinalName()
 	override fun isWriteable(type: Struct): Boolean {
-		return type !is StructEnum
+		return (type !is StructEnum && (type.incoming || type.outgoing))
 	}
 
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
