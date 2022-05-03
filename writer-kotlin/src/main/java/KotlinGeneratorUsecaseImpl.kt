@@ -1,4 +1,5 @@
 import Namer.domainFinalName
+import Namer.kotlinizeVariableName
 import Namer.repoClassName
 import Namer.repoMethodName
 import Namer.usecaseClassName
@@ -30,6 +31,21 @@ class KotlinGeneratorUsecaseImpl(
 
 		writer.writeLine("class " + groupName.usecaseClassName() + "Impl @Inject constructor(val repo: "+groupName.repoClassName()+") : " + groupName.usecaseClassName() + "{")
 		IndentedWriter(writer).use { writer ->
+
+			val implicitParams =
+				endpoints.flatMap { endpoint -> endpoint.params.filter(::isParamImplicit) }.distinctBy { it.key }
+
+			for (param in implicitParams) {
+				val name = kotlinizeVariableName(param.key)
+				val type = param.type.domainFinalName() + if (!param.mandatory) "?" else ""
+				val defaultValue = when (param.key) {
+					//TODO: move to config
+					"x-locale" -> "pl-PL"
+					else -> "unknown value"
+				}
+				writer.writeLine("val $name: $type = \"$defaultValue\"")
+			}
+
 			endpoints.forEach { endpoint ->
 				writeEndpointMethod(writer, endpoint)
 			}
@@ -45,7 +61,7 @@ class KotlinGeneratorUsecaseImpl(
 			writer.writeLine("*/")
 		}
 		writer.writeLine("override fun " + endpoint.usecaseMethodName() + "(")
-		writeParamsDefinitions(writer, endpoint.security.passed() + endpoint.params)
+		writeParamsDefinitions(writer, endpoint.security.passed() + endpoint.params.filter(::isParamNotImplicit))
 		endpoint.response?.also {
 			val rawType = it.type.domainFinalName()
 			val type = if (!it.isArray) rawType else "List<$rawType>"

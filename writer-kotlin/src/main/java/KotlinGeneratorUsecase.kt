@@ -34,7 +34,7 @@ class KotlinGeneratorUsecase(
 		writer.writeLine("")
 
 		writer.writeLine("fun " + endpoint.repoMethodName() + "(")
-		writeParamsDefinitions(writer, endpoint.security.passed() + endpoint.params, true)
+		writeParamsDefinitions(writer, endpoint.security.passed() + endpoint.params.filter(::isParamNotImplicit), true)
 		endpoint.response?.also {
 			val rawType = it.type.domainFinalName()
 			val type = if (!it.isArray) rawType else "List<$rawType>"

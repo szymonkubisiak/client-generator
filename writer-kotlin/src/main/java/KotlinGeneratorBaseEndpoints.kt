@@ -1,5 +1,6 @@
 import models.Endpoint
 import models.EndpointGroup
+import models.Param
 import models.Tag
 import utils.PackageConfig
 
@@ -38,5 +39,13 @@ abstract class KotlinGeneratorBaseEndpoints(pkg: PackageConfig) : KotlinGenerato
 		pkg.openFile("${fileName(name)}.kt").use { writer ->
 			writeEndpointInternal(writer, name, contents)
 		}
+	}
+
+	companion object {
+		fun isParamImplicit(param: Param): Boolean {
+			return param.mandatory && param.location == Param.Location.HEADER
+		}
+
+		fun isParamNotImplicit(param: Param) = !isParamImplicit(param)
 	}
 }
