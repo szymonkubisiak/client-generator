@@ -197,15 +197,16 @@ class OpenApiConverter {
 		return retval
 	}
 
-	fun resolveType(input: Schema<*>): TypeDescr {
+	fun resolveType(input: Schema<*>, parent: Schema<*>? = null): TypeDescr {
 		//by design handle only known types and throw exception if anything unknown comes by
 		val retval = when (input.type) {
 			"array" -> {
 				val inp = input as ArraySchema
-				resolveType(inp.items)
+				//workaround on Springdoc bug: extensions defined on list members are moved one level up
+				resolveType(inp.items, inp)
 			}
 			"string", "number", "integer", "boolean" ->
-				typeFactory.getSimpleType(input.effectiveType, input.effectiveFormat)
+				typeFactory.getSimpleType(getEffectiveType(input, parent), getEffectiveFormat(input, parent))
 			"object", "ref", null -> {
 				input.`$ref`?.also {
 					return refToStructTypeDescr(it)
@@ -232,13 +233,19 @@ class OpenApiConverter {
 
 	val objPrefix = "#/components/schemas/"
 
-	private val <T> Schema<T>.effectiveType: String
-		get() {
-			return (this.extensions?.get("x-type") as? String) ?: this.type
-		}
+	private fun getEffectiveType(input: Schema<*>, parent: Schema<*>?): String {
+		return input.getExtension("x-type")
+			?: parent?.getExtension("x-type")
+			?: input.type
+	}
 
-	private val <T> Schema<T>.effectiveFormat: String?
-		get() {
-			return (this.extensions?.get("x-format") as? String) ?: this.format
-		}
+	private fun getEffectiveFormat(input: Schema<*>, parent: Schema<*>?): String? {
+		return input.getExtension("x-format")
+			?: parent?.getExtension("x-format")
+			?: input.format
+	}
+
+	private inline fun <reified U> Schema<*>.getExtension(key: String) : U? {
+		return this.extensions?.get(key) as? U
+	}
 }
