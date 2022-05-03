@@ -10,7 +10,7 @@ import models.*
 class OpenApiConverter {
 
 	private val typeFactory = TypeDescrFactory()
-	private lateinit var securityDefs : List<Security>
+	private lateinit var securityDefs: List<Security>
 
 	fun swagger2api(input: OpenAPI): Api {
 		val structs = input.components.schemas.map { oneModel ->
@@ -44,7 +44,8 @@ class OpenApiConverter {
 			?.flatMap { it.keys }
 			?.map { key -> securityDefs.first { it.key == key } }
 
-		val concatenatedDescription = listOf(input.summary, input.description).filterNotNull().takeIf { it.isNotEmpty() }?.joinToString("\n")
+		val concatenatedDescription =
+			listOf(input.summary, input.description).filterNotNull().takeIf { it.isNotEmpty() }?.joinToString("\n")
 		return Endpoint(
 			input.operationId,
 			path,
@@ -126,7 +127,7 @@ class OpenApiConverter {
 
 	fun model2struct(typeStr: String, input: Schema<*>): Struct {
 
-		if (input is StringSchema && input.type == "string"){
+		if (input is StringSchema && input.type == "string") {
 			val type = typeFactory.getRefType(typeStr)
 			val transportType = typeFactory.getSimpleType(input.type, null)
 			val values = input.enum
@@ -143,7 +144,7 @@ class OpenApiConverter {
 			}
 			val type = typeFactory.getRefType(typeStr)
 			val requireds: List<String> = input.required ?: emptyList()
-			val fields = (input.properties?: emptyMap()).mapNotNull { oneField ->
+			val fields = (input.properties ?: emptyMap()).mapNotNull { oneField ->
 				try {
 					property2field(oneField.key, oneField.value, requireds.contains(oneField.key))
 						.forceTypeOnID(artificialID, typeStr)
@@ -197,7 +198,7 @@ class OpenApiConverter {
 	}
 
 	fun resolveType(input: Schema<*>): TypeDescr {
-		//by design handle only known types and throw exception if anything unknown cames by
+		//by design handle only known types and throw exception if anything unknown comes by
 		val retval = when (input.type) {
 			"array" -> {
 				val inp = input as ArraySchema
