@@ -58,6 +58,17 @@ class KotlinGeneratorUsecaseImpl(
 		endpoint.description?.split('\n')?.also { descriptionLines ->
 			writer.writeLine("/*")
 			descriptionLines.forEach { writer.writeLine(it) }
+			//TODO: make entire comment javadoc-compliant
+			//writer.writeLine("/**")
+			//descriptionLines.forEach { writer.writeLine("* $it") }
+			endpoint.params
+				.filter { !it.description.isNullOrEmpty() && isParamNotImplicit(it) }
+				.forEachIndexed { index, param ->
+					if (index == 0) writer.writeLine("*")
+					val name = kotlinizeVariableName(param.key)
+					val type = param.type.domainFinalName() + if (!param.mandatory) "?" else ""
+					writer.writeLine("* @param  ${name.padEnd(14, ' ')} $type - ${param.description}")
+				}
 			writer.writeLine("*/")
 		}
 		writer.writeLine("override fun " + endpoint.usecaseMethodName() + "(")
