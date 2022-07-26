@@ -43,7 +43,7 @@ abstract class KotlinGeneratorBaseEndpoints(pkg: PackageConfig) : KotlinGenerato
 
 	companion object {
 		fun isParamImplicit(param: Param): Boolean {
-			return param.mandatory && param.location == Param.Location.HEADER
+			return param.location == Param.Location.HEADER
 		}
 
 		fun isParamNotImplicit(param: Param) = !isParamImplicit(param)
