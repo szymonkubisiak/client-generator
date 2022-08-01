@@ -9,6 +9,9 @@ class KotlinGeneratorDomain(
 ) : KotlinGeneratorBaseStructs(pkg) {
 
 	override fun fileName(type: RefTypeDescr): String = type.domainFinalName()
+	override fun isWriteable(type: Struct): Boolean {
+		return (type is StructEnum || (type.incoming || type.outgoing || type.outgoingAsForm))
+	}
 
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
 		writer.writeLine("package " + pkg.toPackage())

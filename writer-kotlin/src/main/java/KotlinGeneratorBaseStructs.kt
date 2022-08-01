@@ -1,11 +1,12 @@
 import models.RefTypeDescr
 import models.Struct
+import models.StructEnum
 import utils.PackageConfig
 
 abstract class KotlinGeneratorBaseStructs(pkg: PackageConfig) : KotlinGeneratorBase(pkg) {
 	abstract fun writeStruct(writer: GeneratorWriter, model: Struct)
 	abstract fun fileName(type: RefTypeDescr): String
-	open fun isWriteable(type: Struct) = true
+	abstract fun isWriteable(type: Struct): Boolean
 	open fun writeExtras() {}
 
 
