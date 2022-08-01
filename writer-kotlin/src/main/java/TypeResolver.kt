@@ -77,6 +77,7 @@ class TypeResolver private constructor(){
 	 * example: String to Date
 	 */
 	private fun addType(
+	fun addType(
 		transportName: String, format: String?,
 		kotlinTransport: String,
 		kotlinModel: String,
