@@ -89,7 +89,10 @@ object Main {
 		println("Hello World!")
 		val inputfile = properties.getProperty("app.inputfile")
 		val openAPI: OpenAPI = OpenAPIV3Parser().read(inputfile)
-		val api = OpenApiConverter().swagger2api(openAPI)
+		val apiTmp = OpenApiConverter().swagger2api(openAPI)
+
+		kotlinTReadback.readbackStructs(apiTmp.structs)
+		val api = Api(kotlinTReadback.reorderStructFields(apiTmp.structs), apiTmp.paths)
 
 		val typesWithArtificialId = api.structs
 			.mapNotNull { it as? StructActual }
