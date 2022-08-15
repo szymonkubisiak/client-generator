@@ -44,7 +44,7 @@ class KotlinGeneratorUsecaseImpl(
 					"x-locale" -> "Locale.getDefault().toLanguageTag()"
 					else -> "\"unknown value\""
 				}
-				writer.writeLine("val $name: $type = \"$defaultValue\"")
+				writer.writeLine("private val $name: $type = $defaultValue")
 			}
 
 			endpoints.forEach { endpoint ->
