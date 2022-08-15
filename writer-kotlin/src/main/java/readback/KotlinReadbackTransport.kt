@@ -17,6 +17,7 @@ class KotlinReadbackTransport(val pkg: PackageConfig) {
 
 	private lateinit var fieldsOrdering: Map<String, List<String>>
 
+/*
 	fun readbackStructs(models: List<Struct>) {
 		val structs = HashMap<String, List<String>>()
 		models.forEach { struct ->
@@ -31,10 +32,36 @@ class KotlinReadbackTransport(val pkg: PackageConfig) {
 	}
 
 	private fun readbackStruct(struct: StructActual): List<String>? {
-		val fields = ArrayList<String>()
 		val fileName = fileName(struct.type)
+		return readbackStruct("$fileName.kt")
+	}
+
+	private fun fileName(type: RefTypeDescr): String = type.transportFinalName()
+*/
+
+	private val fileSuffix = "Pojo.kt"
+
+	private fun readbackStructsByDirectory() {
+		val structs = HashMap<String, List<String>>()
+		val directory = File(pkg.asDir)
+		val files = directory.listFiles()
+		files?.forEach { file ->
+			val fileName = file.name
+			if (fileName.endsWith(fileSuffix)) {
+				val fields = readbackStruct(fileName)?.takeIf { it.isNotEmpty() }
+				val structName = fileName.substring(0, fileName.length - fileSuffix.length)
+				fields?.also {
+					structs[structName] = it
+				}
+			}
+		}
+		fieldsOrdering = structs
+	}
+
+	private fun readbackStruct(fileName: String): List<String>? {
+		val fields = ArrayList<String>()
 		try {
-			val file = File("${pkg.asDir}/$fileName.kt")
+			val file = File("${pkg.asDir}/$fileName")
 
 			val myReader = Scanner(file);
 			while (myReader.hasNextLine()) {
@@ -62,8 +89,6 @@ class KotlinReadbackTransport(val pkg: PackageConfig) {
 		return fields
 	}
 
-	fun fileName(type: RefTypeDescr): String = type.transportFinalName()
-
 	fun reorderStructFields(structs: List<Struct>): List<Struct> {
 		//re-sort fields of structs to match previous version
 		//this is to circumvent a bug that shuffles api-doc once in a while
@@ -78,5 +103,9 @@ class KotlinReadbackTransport(val pkg: PackageConfig) {
 				}
 			}
 		}
+	}
+
+	init {
+		readbackStructsByDirectory()
 	}
 }

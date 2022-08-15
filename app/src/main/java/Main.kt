@@ -91,7 +91,6 @@ object Main {
 		val openAPI: OpenAPI = OpenAPIV3Parser().read(inputfile)
 		val apiTmp = OpenApiConverter().swagger2api(openAPI)
 
-		kotlinTReadback.readbackStructs(apiTmp.structs)
 		val api = Api(kotlinTReadback.reorderStructFields(apiTmp.structs), apiTmp.paths)
 
 		val typesWithArtificialId = api.structs
