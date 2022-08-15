@@ -7,39 +7,50 @@ class Api(
 
 	init {
 		paths.forEach { endpoint ->
-			(endpoint.response?.type as? RefTypeDescr)?.definition?.markIncoming()
+			getStruct(endpoint.response?.type)?.markIncoming()
 			endpoint.params
 				.map { it.type }
 				.filterIsInstance<RefTypeDescr>()
 				.forEach {
 					if (endpoint.isWwwForm())
-						it.definition?.markOutgoingAsForm()
+						getStruct(it)?.markOutgoingAsForm()
 					else
-						it.definition?.markOutgoing()
+						getStruct(it)?.markOutgoing()
 				}
 		}
 	}
 
-	companion object {
-		fun Struct.markIncoming() {
-			this.incoming = true
-			(this as? StructActual)?.fields
-				?.forEach {
-					(it.type as? RefTypeDescr)?.definition?.markIncoming()
-				}
-		}
+	fun getStruct(key: String) : Struct? {
+		return structs.firstOrNull { it.key == key }
+	}
 
-		fun Struct.markOutgoing() {
-			this.outgoing = true
-			(this as? StructActual)?.fields
-				?.forEach {
-					(it.type as? RefTypeDescr)?.definition?.markOutgoing()
-				}
-		}
+	fun getStruct(refType: RefTypeDescr?) : Struct? {
+		refType ?: return null
+		return getStruct(refType.key)
+	}
 
-		fun Struct.markOutgoingAsForm() {
-			this.outgoingAsForm = true
-			//Outgoing as PostForm cannot include to objects
-		}
+	fun getStruct(anyType: TypeDescr?): Struct? {
+		return getStruct(anyType as? RefTypeDescr)
+	}
+
+	private fun Struct.markIncoming() {
+		this.incoming = true
+		(this as? StructActual)?.fields
+			?.forEach {
+				getStruct(it.type)?.markIncoming()
+			}
+	}
+
+	private fun Struct.markOutgoing() {
+		this.outgoing = true
+		(this as? StructActual)?.fields
+			?.forEach {
+				getStruct(it.type)?.markOutgoing()
+			}
+	}
+
+	private fun Struct.markOutgoingAsForm() {
+		this.outgoingAsForm = true
+		//Outgoing as PostForm cannot include to objects
 	}
 }

@@ -2,13 +2,15 @@ package models
 
 sealed class Struct {
 	abstract val type: RefTypeDescr
+	val key: String
+		get () = type.key
 
 	var incoming = false
 	var outgoing = false
 	var outgoingAsForm = false
 }
 
-class StructActual constructor(
+data class StructActual constructor(
 	override val type: RefTypeDescr,
 	val fields: List<Field>,
 	val description: String?,
@@ -19,7 +21,7 @@ class StructActual constructor(
 	}
 }
 
-class StructEnum constructor(
+data class StructEnum constructor(
 	override val type: RefTypeDescr,
 	val transportType: BuiltinTypeDescr,
 	val values: List<String>,
