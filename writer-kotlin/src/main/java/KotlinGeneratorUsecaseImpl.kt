@@ -41,7 +41,7 @@ class KotlinGeneratorUsecaseImpl(
 				val defaultValue = when (param.key) {
 					//TODO: move to config
 					"x-locale" -> "pl-PL"
-					else -> "unknown value"
+					else -> "\"unknown value\""
 				}
 				writer.writeLine("val $name: $type = \"$defaultValue\"")
 			}
