@@ -19,6 +19,9 @@ class KotlinGeneratorUsecaseImpl(
 	override fun fileName(endpoint: EndpointGroup): String = endpoint.usecaseClassName() + "Impl"
 
 	override fun writeEndpointInternal(writer: GeneratorWriter, groupName: EndpointGroup, endpoints: List<Endpoint>) {
+		val implicitParams =
+				endpoints.flatMap { endpoint -> endpoint.params.filter(::isParamImplicit) }.distinctBy { it.key }
+
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
 		writer.writeLine("import io.reactivex.rxjava3.core.Single")
@@ -26,21 +29,19 @@ class KotlinGeneratorUsecaseImpl(
 		writer.writeLine("import " + domain.toPackage() + ".*")
 		writer.writeLine("import " + ucDefs.toPackage() + ".*")
 		writer.writeLine("import " + repoDefs.toPackage() + ".*")
+		if (implicitParams.isNotEmpty()) writer.writeLine("import java.util.*")
 		writer.writeLine("import javax.inject.Inject")
 		writer.writeLine("")
 
 		writer.writeLine("class " + groupName.usecaseClassName() + "Impl @Inject constructor(val repo: "+groupName.repoClassName()+") : " + groupName.usecaseClassName() + "{")
 		IndentedWriter(writer).use { writer ->
 
-			val implicitParams =
-				endpoints.flatMap { endpoint -> endpoint.params.filter(::isParamImplicit) }.distinctBy { it.key }
-
 			for (param in implicitParams) {
 				val name = kotlinizeVariableName(param.key)
 				val type = param.type.domainFinalName() + if (!param.mandatory) "?" else ""
 				val defaultValue = when (param.key) {
 					//TODO: move to config
-					"x-locale" -> "pl-PL"
+					"x-locale" -> "Locale.getDefault().toLanguageTag()"
 					else -> "\"unknown value\""
 				}
 				writer.writeLine("val $name: $type = \"$defaultValue\"")
