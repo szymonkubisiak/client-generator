@@ -6,6 +6,7 @@ import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.parser.OpenAPIV3Parser
 import models.Api
 import models.StructActual
+import readback.KotlinReadbackTransport
 import utils.Package
 import utils.PackageConfig
 import java.io.FileInputStream
@@ -25,6 +26,7 @@ object Main {
 			}
 		}
 
+	val kotlinTReadback: KotlinReadbackTransport
 	val kotlinT: KotlinGeneratorTransport
 	val kotlinD: KotlinGeneratorDomain
 	val kotlinT2D: KotlinGeneratorConverters
@@ -49,6 +51,8 @@ object Main {
 
 		val transport = master.copy(module = Package("conn"), suffix = Package(generatedPrefix, "models"))
 		kotlinT = KotlinGeneratorTransport(transport)
+
+		kotlinTReadback = KotlinReadbackTransport(transport)
 
 		val domain = master.copy(module = Package("domain"), suffix = Package(generatedPrefix, "models"))
 		kotlinD = KotlinGeneratorDomain(domain, manualModels)
