@@ -1,13 +1,9 @@
 package readback
 
-import Namer.transportFinalName
 import models.*
 import utils.PackageConfig
 import java.io.File
 import java.io.FileNotFoundException
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 /**
  * Simple hack to read back POJOs written previously
@@ -39,6 +35,7 @@ class KotlinReadbackTransport(val pkg: PackageConfig) {
 	private fun fileName(type: RefTypeDescr): String = type.transportFinalName()
 */
 
+	private val rgx = "^\tvar ([a-zA-Z0-9_-]+): (.*)\\? = null(?:\t//(.*))?$".toRegex(RegexOption.MULTILINE)
 	private val fileSuffix = "Pojo.kt"
 
 	private fun readbackStructsByDirectory() {
@@ -48,10 +45,9 @@ class KotlinReadbackTransport(val pkg: PackageConfig) {
 		files?.forEach { file ->
 			val fileName = file.name
 			if (fileName.endsWith(fileSuffix)) {
-				val fields = readbackStruct(fileName)?.takeIf { it.isNotEmpty() }
-				val structName = fileName.substring(0, fileName.length - fileSuffix.length)
-				fields?.also {
-					structs[structName] = it
+				readbackStruct(fileName)?.also { fields ->
+					val structName = fileName.substring(0, fileName.length - fileSuffix.length)
+					structs[structName] = fields
 				}
 			}
 		}
@@ -59,34 +55,23 @@ class KotlinReadbackTransport(val pkg: PackageConfig) {
 	}
 
 	private fun readbackStruct(fileName: String): List<String>? {
-		val fields = ArrayList<String>()
 		try {
 			val file = File("${pkg.asDir}/$fileName")
 
-			val myReader = Scanner(file);
-			while (myReader.hasNextLine()) {
-				val data = myReader.nextLine()
-				if (!data.startsWith("\tvar "))
-					continue
-				val line = Scanner(data)
-				line.skip("\tvar ")
+			file.bufferedReader().use { reader ->
+				val matches = rgx.findAll(reader.readText()).toList()
 
-				line.useDelimiter(": ")
+				val fields = matches.map { it.groupValues.drop(1) }
+					.map { it[0] }
 
-				val field = line.next()
-				line.skip(": ")
-				line.useDelimiter("\\?")
-				val type = line.next()
-				fields += field
+				return fields.takeIf { it.isNotEmpty() }
 			}
-			myReader.close();
+
 		} catch (e: FileNotFoundException) {
-			//System.out.println("An error occurred.");
+			//println("An error occurred.")
 			//e.printStackTrace();
 			return null
 		}
-
-		return fields
 	}
 
 	fun reorderStructFields(structs: List<Struct>): List<Struct> {
