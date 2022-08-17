@@ -6,6 +6,13 @@ class Api(
 ) {
 
 	init {
+		structs
+			.filterIsInstance<StructActual>()
+			.forEach {
+				it.incoming = false
+				it.outgoing = false
+				it.outgoingAsForm = false
+			}
 		paths.forEach { endpoint ->
 			getStruct(endpoint.response?.type)?.markIncoming()
 			endpoint.params
