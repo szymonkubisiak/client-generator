@@ -151,18 +151,14 @@ class KotlinGeneratorConverters(
 		val conversion = resolveDomainToMapFieldConversion(field.type)
 		val conversionIt = conversion.format("it")
 
-		var expression = "this[\"$name\"] = input.$name"
-
-		expression = if (field.mandatory) {
-			expression
-		} else {
-			"$expression?"
+		if (field.isArray) {
+			throw InvalidFieldException("array type ${field.key} cannot be converted to map")
 		}
 
-		expression = if (field.isArray) {
-			throw InvalidFieldException("enum type ${field.key} cannot be converted to map")
+		val expression = if (field.mandatory) {
+			"this[\"$name\"] = input.$name.let { $conversionIt }"
 		} else {
-			"$expression.let { $conversionIt }"
+			"input.$name?.also { this[\"$name\"] = $conversionIt }"
 		}
 
 		writer.writeLine(expression)
