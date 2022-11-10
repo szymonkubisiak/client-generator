@@ -12,6 +12,7 @@ abstract class KotlinGeneratorBaseStructs(pkg: PackageConfig) : KotlinGeneratorB
 
 	open fun writeStructs(models: List<Struct>) {
 		pkg.createAndCleanupDirectory()
+	try {
 		models.forEach { struct ->
 			if (!isWriteable(struct)) {
 				return@forEach
@@ -20,6 +21,9 @@ abstract class KotlinGeneratorBaseStructs(pkg: PackageConfig) : KotlinGeneratorB
 				writeStruct(writer, struct)
 			}
 		}
+	} catch (x: Exception) {
+		x.printStackTrace()
+	}
 		writeExtras()
 	}
 }
