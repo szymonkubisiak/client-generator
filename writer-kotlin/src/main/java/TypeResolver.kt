@@ -76,7 +76,6 @@ class TypeResolver private constructor(){
 	 * add a type that's represented by one type in JSON and another one in Kotlin
 	 * example: String to Date
 	 */
-	private fun addType(
 	fun addType(
 		transportName: String, format: String?,
 		kotlinTransport: String,
