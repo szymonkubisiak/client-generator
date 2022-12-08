@@ -19,6 +19,8 @@ class KotlinGeneratorRepo(
 		writer.writeLine("import io.reactivex.rxjava3.core.Single")
 		writer.writeLine("import io.reactivex.rxjava3.core.Completable")
 		writer.writeLine("import " + domain.toPackage() + ".*")
+		if (needDates(endpoints))
+			writer.writeLine("import java.time.*")
 		writer.writeLine("")
 
 		writer.writeLine("interface " + groupName.repoClassName() + " {")

@@ -37,6 +37,8 @@ abstract class KotlinGeneratorBase(
 					val name = kotlinizeVariableName(param.key)
 					val type = param.type.domainFinalName() + if (!param.mandatory) nullableString else ""
 					writer.writeLine("$name: $type,")
+					//val comment = param.description?.let { " // $it" } ?: ""
+					//writer.writeLine("$name: $type,$comment")
 				}
 			}
 		}
@@ -58,5 +60,25 @@ abstract class KotlinGeneratorBase(
 
 		val jwtToken = "JWT"
 		val xsrfToken = "X-XSRF-TOKEN"
+
+
+
+		fun needDates(endpoints: List<Endpoint>): Boolean {
+			return endpoints.any { endpoint ->
+				endpoint.params.any { param ->
+					needDates(param.type)
+				}
+			}
+		}
+
+		fun needDates(model: Struct): Boolean {
+			return (model as? StructActual)?.fields?.any {
+				needDates(it.type)
+			} ?: false
+		}
+
+		fun needDates(type: TypeDescr): Boolean {
+			return type.domainFinalName() == "LocalDate"
+		}
 	}
 }

@@ -44,6 +44,8 @@ class KotlinGeneratorRepoImpl(
 		writer.writeLine("import " + t2d.toPackage() + ".*")
 		writer.writeLine("import " + domain.toPackage() + ".*")
 		writer.writeLine("import " + repos.toPackage() + ".*")
+		if (needDates(endpoints))
+			writer.writeLine("import java.time.*")
 		writer.writeLine("import javax.inject.Inject")
 		writer.writeLine("")
 

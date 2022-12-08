@@ -17,6 +17,8 @@ class KotlinGeneratorDomain(
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
 		writer.writeLine("import " + manualModels.toPackage() + ".*")
+		if(needDates(model))
+			writer.writeLine("import java.time.*")
 		writer.writeLine("")
 		when(model){
 			is StructActual -> writeActualStruct(writer, model)

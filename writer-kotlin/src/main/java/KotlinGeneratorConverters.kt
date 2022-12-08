@@ -22,7 +22,7 @@ class KotlinGeneratorConverters(
 	override fun writeStruct(writer: GeneratorWriter, model: Struct) {
 		when (model) {
 			is StructActual -> {
-				writeImports(writer)
+				writeImports(writer, model)
 				if(model.incoming)
 					writeActualStructT2D(writer, model)
 				if(model.outgoing)
@@ -164,12 +164,14 @@ class KotlinGeneratorConverters(
 		writer.writeLine(expression)
 	}
 
-	private fun writeImports(writer: GeneratorWriter) {
+	private fun writeImports(writer: GeneratorWriter, model: Struct) {
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
 		writer.writeLine("import " + conn.toPackage() + ".*")
 		writer.writeLine("import " + domain.toPackage() + ".*")
 		writer.writeLine("import " + manualModels.toPackage() + ".*")
+		if(needDates(model))
+			writer.writeLine("import java.time.*")
 		writer.writeLine("")
 	}
 

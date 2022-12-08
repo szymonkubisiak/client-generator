@@ -30,6 +30,8 @@ class KotlinGeneratorUsecaseImpl(
 		writer.writeLine("import " + ucDefs.toPackage() + ".*")
 		writer.writeLine("import " + repoDefs.toPackage() + ".*")
 		if (implicitParams.isNotEmpty()) writer.writeLine("import java.util.*")
+		if (needDates(endpoints))
+			writer.writeLine("import java.time.*")
 		writer.writeLine("import javax.inject.Inject")
 		writer.writeLine("")
 
