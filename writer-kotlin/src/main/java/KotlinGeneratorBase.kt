@@ -35,7 +35,7 @@ abstract class KotlinGeneratorBase(
 			IndentedWriter(writer).use { writer ->
 				for (param in params) {
 					val name = kotlinizeVariableName(param.key)
-					val type = param.type.domainFinalName() + if (!param.mandatory) nullableString else ""
+					val type = param.domainFinalName() + if (!param.mandatory) nullableString else ""
 					writer.writeLine("$name: $type,")
 					//val comment = param.description?.let { " // $it" } ?: ""
 					//writer.writeLine("$name: $type,$comment")

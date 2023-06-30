@@ -56,7 +56,7 @@ class KotlinGeneratorRetrofit(
 				val type = if (isWwwForm)
 					"Map<String, String?>"
 				else
-					(param.type.transportFinalName() + if (!param.mandatory) "?" else "")
+					(param.transportFinalName() + if (!param.mandatory) "?" else "")
 
 				writer.writeLine("@$location $name: $type,")
 			}

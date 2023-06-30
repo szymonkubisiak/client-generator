@@ -105,7 +105,7 @@ class OpenApiConverter {
 		val retval = Param(
 			key = input.name,
 			type = resolveType(input.schema),
-			isArray = input is ArraySchema,
+			isArray = input.schema is ArraySchema,
 			mandatory = input.required,
 			description = input.description,
 			location = location,

@@ -27,6 +27,22 @@ object Namer {
 		}
 	}
 
+	fun IField.domainFinalName():String {
+		return when {
+			isArray -> "List<${type.domainFinalName()}>"
+			isStringmap -> "Map<String, ${type.domainFinalName()}>"
+			else -> type.domainFinalName()
+		}
+	}
+
+	fun IField.transportFinalName():String {
+		return when {
+			isArray -> "List<${type.transportFinalName()}>"
+			isStringmap -> "Map<String, ${type.transportFinalName()}>"
+			else -> type.transportFinalName()
+		}
+	}
+
 	fun EndpointGroup.serviceClassName() = this.key.capitalize() + "Service"
 	fun EndpointGroup.serviceMethodName() = this.key.decapitalize()
 
