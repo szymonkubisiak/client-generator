@@ -104,7 +104,14 @@ class KotlinGeneratorRepoImpl(
 					expression = if (param.isArray) {
 						"$expression.map { $conversionIt },"
 					} else {
-						val defaultizer = param.defaultValue?.let { defVal -> "?.takeIf { it != $defVal }" } ?: ""
+						val defaultizer = param.defaultValue?.let { defVal ->
+							val isString = param.type.key == "string"
+							if (isString) {
+								"?.takeIf { it != \"$defVal\" }"
+							} else {
+								"?.takeIf { it != $defVal }"
+							}
+						} ?: ""
 						"$expression.let { $conversionIt }$defaultizer,"
 					}
 					writer.writeLine(expression)
