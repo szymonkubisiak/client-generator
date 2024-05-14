@@ -169,7 +169,7 @@ class KotlinGeneratorRepoImpl(
 					if (hasJwt) writer.writeLine("jwt,")
 					if (hasXsrf) writer.writeLine("xsrf,")
 					for (param in endpoint.params) {
-						val name = param.key
+						val name = kotlinizeVariableName(param.key)
 						writer.writeLine("$name,")
 					}
 				}
