@@ -4,6 +4,8 @@ import io.swagger.parser.SwaggerParser
 import io.swagger.parser.util.InlineModelResolver
 import io.swagger.v3.oas.models.OpenAPI
 import io.swagger.v3.parser.OpenAPIV3Parser
+import io.swagger.v3.parser.core.models.AuthorizationValue
+import io.swagger.v3.parser.core.models.ParseOptions
 import models.Api
 import models.StructActual
 import readback.KotlinReadbackTransport
@@ -88,7 +90,10 @@ object Main {
 	fun main(args: Array<String>) {
 		println("Hello World!")
 		val inputfile = properties.getProperty("app.inputfile")
-		val openAPI: OpenAPI = OpenAPIV3Parser().read(inputfile)
+		val auth = properties.getProperty("app.inputfileBasicAuth")?.let {
+			AuthorizationValue("Authorization", "Basic " + Base64.getEncoder().encodeToString(it.encodeToByteArray()), "header")
+		}
+		val openAPI: OpenAPI = OpenAPIV3Parser().read(inputfile, listOfNotNull(auth), ParseOptions().apply { isResolve = true })
 		val apiTmp = OpenApiConverter().swagger2api(openAPI)
 
 		val api = Api(kotlinTReadback.reorderStructFields(apiTmp.structs), apiTmp.paths)
