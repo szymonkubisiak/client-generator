@@ -58,7 +58,7 @@ class KotlinGeneratorDomain(
 //			writer.writeLine("//$it")
 //		}
 
-		val name = field.key
+		val name = Namer.kotlinizeVariableName(field.key)
 		val rawType = field.type.domainFinalName()
 		var type = when {
 			field.isArray -> "List<$rawType>"

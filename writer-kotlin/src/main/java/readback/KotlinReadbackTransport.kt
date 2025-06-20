@@ -35,7 +35,8 @@ class KotlinReadbackTransport(val pkg: PackageConfig) {
 	private fun fileName(type: RefTypeDescr): String = type.transportFinalName()
 */
 
-	private val rgx = "^\tvar ([a-zA-Z0-9_-]+): (.*)\\? = null(?:\t//(.*))?$".toRegex(RegexOption.MULTILINE)
+	//don't know how to read quoted content into same group but without the quotes
+	private val rgx = "^\tvar ([a-zA-Z0-9_-]+|`[^`]+`): (.*)\\? = null(?:\t//(.*))?$".toRegex(RegexOption.MULTILINE)
 	private val fileSuffix = "Pojo.kt"
 
 	private fun readbackStructsByDirectory() {
@@ -61,6 +62,7 @@ class KotlinReadbackTransport(val pkg: PackageConfig) {
 			file.bufferedReader().use { reader ->
 				val matches = rgx.findAll(reader.readText()).toList()
 
+				//first matched group is the entire line
 				val fields = matches.map { it.groupValues.drop(1) }
 					.map { it[0] }
 
@@ -83,7 +85,9 @@ class KotlinReadbackTransport(val pkg: PackageConfig) {
 				is StructActual -> {
 					val oldOrder = fieldsOrdering[it.key] ?: return@map it
 					val orderById = oldOrder.withIndex().associate { it.value to it.index }
-					val sortedFields = it.fields.sortedBy { orderById[it.key] ?: 0xFFFF }
+					val sortedFields = it.fields.sortedBy {
+						orderById[it.key] ?: orderById[Namer.kotlinizeVariableName(it.key)] ?: 0xFFFF
+					}
 					it.copy(fields = sortedFields)
 				}
 			}

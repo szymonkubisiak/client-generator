@@ -52,7 +52,7 @@ class KotlinGeneratorConverters(
 	}
 
 	fun writeFieldT2D(writer: GeneratorWriter, field: Field) {
-		val name = field.key
+		val name = Namer.kotlinizeVariableName(field.key)
 		// val type = typeResolver.resolveTransportType(field.type)
 		val conversion = resolveTransportToDomainConversion(field.type)
 		val conversionIt = conversion.format("it")
@@ -94,7 +94,7 @@ class KotlinGeneratorConverters(
 	}
 
 	private fun writeFieldD2T(writer: GeneratorWriter, field: Field) {
-		val name = field.key
+		val name = Namer.kotlinizeVariableName(field.key)
 		// val type = typeResolver.resolveTransportType(field.type)
 		val conversion = resolveDomainToTransportConversion(field.type)
 		val conversionIt = conversion.format("it")
