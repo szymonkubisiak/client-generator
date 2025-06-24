@@ -46,6 +46,15 @@ class OpenApiConverter {
 
 		val concatenatedDescription =
 			listOf(input.summary, input.description).filterNotNull().takeIf { it.isNotEmpty() }?.joinToString("\n")
+
+		val deprecationNotice = if(input.deprecated == true) {
+			val rgx = """^\*\*DEPRECATION (?:NOT.*)\*\*\s*(.*)$""".toRegex(RegexOption.MULTILINE)
+			val retval = rgx.findAll(input.description).map { it.groupValues.drop(1) }.firstOrNull()?.firstOrNull()
+			retval
+		} else {
+			null
+		}
+
 		return Endpoint(
 			input.operationId,
 			path,
@@ -56,7 +65,8 @@ class OpenApiConverter {
 			response?.second,
 			response?.first,
 			security,
-			concatenatedDescription
+			concatenatedDescription,
+			deprecationNotice,
 		)
 	}
 

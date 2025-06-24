@@ -10,6 +10,7 @@ class Endpoint(
 	val mediaType: String?,
 	val security: List<Security>?,
 	val description: String?,
+	val deprecated: String?,
 ) : EndpointGroup {
 	override val key = name
 

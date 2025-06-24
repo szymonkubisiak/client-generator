@@ -35,6 +35,9 @@ class KotlinGeneratorUsecase(
 	private fun writeEndpointMethod(writer: IndentedWriter, endpoint: Endpoint) {
 		writer.writeLine("")
 
+		endpoint.deprecated?.also {
+			writer.writeLine("@Deprecated(\"$it\")")
+		}
 		writer.writeLine("fun " + endpoint.repoMethodName() + "(")
 		writeParamsDefinitions(writer, endpoint.security.passed() + endpoint.params.filter(::isParamNotImplicit), true)
 		endpoint.response?.also {
