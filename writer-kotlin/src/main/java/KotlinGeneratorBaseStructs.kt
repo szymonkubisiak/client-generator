@@ -12,18 +12,18 @@ abstract class KotlinGeneratorBaseStructs(pkg: PackageConfig) : KotlinGeneratorB
 
 	open fun writeStructs(models: List<Struct>) {
 		pkg.createAndCleanupDirectory()
-	try {
 		models.forEach { struct ->
-			if (!isWriteable(struct)) {
-				return@forEach
+			try {
+				if (!isWriteable(struct)) {
+					return@forEach
+				}
+				pkg.openFile("${fileName(struct.type)}.kt").use { writer ->
+					writeStruct(writer, struct)
+				}
+			} catch (x: Exception) {
+				Exception("in model [${struct.key}]", x ).printStackTrace()
 			}
-			pkg.openFile("${fileName(struct.type)}.kt").use { writer ->
-				writeStruct(writer, struct)
-			}
+			writeExtras()
 		}
-	} catch (x: Exception) {
-		x.printStackTrace()
-	}
-		writeExtras()
 	}
 }
