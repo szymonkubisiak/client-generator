@@ -7,6 +7,8 @@ import io.swagger.v3.oas.models.parameters.RequestBody
 import io.swagger.v3.oas.models.responses.ApiResponse
 import models.*
 
+private const val jwtToken = "JWT" //duplication in KotlinGeneratorBase
+
 class OpenApiConverter {
 
 	private val typeFactory = TypeDescrFactory()
@@ -18,6 +20,9 @@ class OpenApiConverter {
 		}
 		securityDefs = input.components.securitySchemes.map {
 			Security(it.key, parseLocation(it.value.`in`.toString()))
+		}.let { securityDefs ->
+			val optionalJwt = securityDefs.firstOrNull { it.key == jwtToken }?.let { Security(it.key, it.location, false) }
+			securityDefs + listOfNotNull(optionalJwt)
 		}
 		val paths = input.paths.flatMap { onePath ->
 			path2Endpoints(onePath.key, onePath.value)
@@ -40,9 +45,10 @@ class OpenApiConverter {
 	fun operation2Endpoint(path: String, operation: String, input: Operation): Endpoint {
 		val ap: ApiResponse? = input.responses?.get("200")
 		val response = ap?.content?.let(::pickOneContent)
+		val securityIsOptional = input.security?.any { it.containsKey("none") } ?: false
 		val security = input.security
 			?.flatMap { it.keys }
-			?.map { key -> securityDefs.first { it.key == key } }
+			?.mapNotNull { key -> securityDefs.firstOrNull { it.key == key && (it.mandatory != securityIsOptional || it.key != jwtToken) } }
 
 		val concatenatedDescription =
 			listOf(input.summary, input.description).filterNotNull().takeIf { it.isNotEmpty() }?.joinToString("\n")

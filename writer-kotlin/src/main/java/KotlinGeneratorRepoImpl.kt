@@ -28,6 +28,7 @@ class KotlinGeneratorRepoImpl(
 			writer.writeLine("interface JwtProvider{")
 			IndentedWriter(writer).use { writer ->
 				writer.writeLine("fun <T: Any> executeWithJwt(callee: (jwt: String) -> Single<T>): Single<T>")
+				writer.writeLine("fun <T: Any> executeWithOptionalJwt(callee: (jwt: String?) -> Single<T>): Single<T>")
 				writer.writeLine("fun <T: Any> executeWithJwtAndXsrf(callee: (jwt: String, xsrf: String) -> Single<T>): Single<T>")
 				writer.writeLine("fun executeWithJwtAndXsrf(callee: (jwt: String, xsrf: String) -> Completable): Completable")
 			}
@@ -143,8 +144,10 @@ class KotlinGeneratorRepoImpl(
 		writeParamsDefinitions(writer, endpoint.params)
 		writeFunctionReturnType(writer, endpoint)
 
-		val hasJwt = endpoint.security.hasJwt()
-		val hasXsrf = endpoint.security.hasXsrf()
+
+		val handledSecurity = endpoint.security.handled()
+		val jwt = handledSecurity.firstOrNull { it.key == jwtToken }
+		val xsrf = handledSecurity.firstOrNull { it.key == xsrfToken }
 
 		val returnType = endpoint.response?.let {
 			val rawType = it.type.domainFinalName()
@@ -154,9 +157,12 @@ class KotlinGeneratorRepoImpl(
 
 		IndentedWriter(writer).use { writer ->
 			//writer.writeLine("return jwt.executeWithJwt(::" + endpoint.repoMethodName() + "Internal)")
-			if (hasJwt && !hasXsrf) {
-				writer.writeLine("return jwt.executeWithJwt { jwt ->")
-			} else if (hasJwt && hasXsrf) {
+			if (jwt != null && xsrf == null) {
+				if(jwt.mandatory)
+					writer.writeLine("return jwt.executeWithJwt { jwt ->")
+				else
+					writer.writeLine("return jwt.executeWithOptionalJwt { jwt ->")
+			} else if (jwt != null && xsrf != null) {
 				writer.writeLine("return jwt.executeWithJwtAndXsrf$returnType { jwt, xsrf ->")
 			} else {
 				writer.writeLine("TODO(\"handle other jwt/xsrf combinations\")")
@@ -166,8 +172,8 @@ class KotlinGeneratorRepoImpl(
 			IndentedWriter(writer).use { writer ->
 				writer.writeLine(endpoint.repoMethodName() + "Internal(")
 				IndentedWriter(writer).use { writer ->
-					if (hasJwt) writer.writeLine("jwt,")
-					if (hasXsrf) writer.writeLine("xsrf,")
+					if (jwt != null) writer.writeLine("jwt,")
+					if (xsrf != null) writer.writeLine("xsrf,")
 					for (param in endpoint.params) {
 						val name = kotlinizeVariableName(param.key)
 						writer.writeLine("$name,")

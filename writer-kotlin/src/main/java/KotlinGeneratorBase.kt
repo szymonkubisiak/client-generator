@@ -4,6 +4,9 @@ import models.*
 import utils.PackageConfig
 import java.io.PrintWriter
 
+const val jwtToken = "JWT" //duplication in OpenApiConverter
+const val xsrfToken = "X-XSRF-TOKEN"
+
 abstract class KotlinGeneratorBase(
 	val pkg: PackageConfig,
 	protected val typeResolver: TypeResolver = TypeResolver.instance,
@@ -55,12 +58,6 @@ abstract class KotlinGeneratorBase(
 
 		fun List<Security>?.handled() = this?.filter { it.key == jwtToken || it.key == xsrfToken } ?: emptyList()
 		fun List<Security>?.passed() = this?.filter { it.key != jwtToken && it.key != xsrfToken } ?: emptyList()
-		fun List<Security>?.hasJwt() = this?.any { it.key == jwtToken } ?: false
-		fun List<Security>?.hasXsrf() = this?.any { it.key == xsrfToken } ?: false
-
-		val jwtToken = "JWT"
-		val xsrfToken = "X-XSRF-TOKEN"
-
 
 
 		fun needDates(endpoints: List<Endpoint>): Boolean {
