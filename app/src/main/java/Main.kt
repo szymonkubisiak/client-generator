@@ -96,7 +96,17 @@ object Main {
 		val openAPI: OpenAPI = OpenAPIV3Parser().read(inputfile, listOfNotNull(auth), ParseOptions().apply { isResolve = true })
 		val apiTmp = OpenApiConverter().swagger2api(openAPI)
 
-		val api = Api(kotlinTReadback.reorderStructFields(apiTmp.structs), apiTmp.paths)
+		val ignoredTags = listOf(
+			"TagsYouWantToIgnore",
+		)
+		val reorderedStructs = kotlinTReadback.reorderStructFields(apiTmp.structs)
+		val api = Api(reorderedStructs,
+			apiTmp.paths.filter { endpoint ->
+				endpoint.tags.none { tag ->
+					ignoredTags.contains(tag.key)
+				}
+			}
+		)
 
 		val typesWithArtificialId = api.structs
 			.mapNotNull { it as? StructActual }
