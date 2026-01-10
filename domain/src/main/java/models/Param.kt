@@ -1,6 +1,6 @@
 package models
 
-class Param constructor(
+data class Param constructor(
 	override val key: String,
 	override val type: TypeDescr,
 	override val isArray: Boolean,
@@ -16,5 +16,11 @@ class Param constructor(
 		data class BODY(val mediaType: String) : Location()
 		object HEADER : Location()
 		object COOKIE : Location()
+	}
+
+	override fun toString(): String {
+
+
+		return "$key:$type"
 	}
 }

@@ -37,6 +37,7 @@ class OpenApiConverter {
 			try {
 				operation2Endpoint(path, it.key.toString(), it.value)
 			} catch (ex: Exception) {
+				println("Failed to parse operation ${it.value.operationId}")
 				null
 			}
 		}

@@ -31,7 +31,7 @@ class KotlinGeneratorRetrofit(
 		writer.writeLine("}")
 	}
 
-	private fun writeEndpointMethod(writer: IndentedWriter, endpoint: Endpoint): Any {
+	private fun writeEndpointMethod(writer: IndentedWriter, endpoint: Endpoint) {
 		writer.writeLine("")
 		endpoint.description?.split('\n')?.also { descriptionLines ->
 			writer.writeLine("/*")
@@ -61,7 +61,7 @@ class KotlinGeneratorRetrofit(
 				writer.writeLine("@$location $name: $type,")
 			}
 		}
-		return endpoint.response?.also {
+		endpoint.response?.also {
 			val rawType = it.type.transportFinalName()
 			val type = if (!it.isArray) rawType else "List<$rawType>"
 			writer.writeLine("): Single<$type>")
