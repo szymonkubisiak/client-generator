@@ -29,6 +29,7 @@ class TypeResolver private constructor(){
 	init {
 		//Any numbers. This type is forbidden in Kotlin, as no type can represent both floating and fixed point at the same time
 		//addType("number",null, throw NotImplementedError())
+		addType("number", null, "Long")
 		//Floating-point numbers.
 		addType("number", "float", "Float")
 		//Floating-point numbers with double precision.
@@ -44,11 +45,12 @@ class TypeResolver private constructor(){
 
 		//Any String
 		addType("string", null, "String")
+		addType("string", "uuid", "String")
 		// – full-date notation as defined by RFC 3339, section 5.6, for example, 2017-07-21
 		//addType("string", "Date", "String")
 		addType("string", "date", "String", "LocalDate", "LocalDate.parse(%s)", "%s.toString()")
 		// – the date-time notation as defined by RFC 3339, section 5.6, for example, 2017-07-21T17:32:28Z
-		addType("string", "date-time", "String")
+		addType("string", "date-time", "String", "LocalDateTime", "LocalDateTime.parse(%s)", "%s.toString()")
 		// – a hint to UIs to mask the input
 		addType("string", "password", "String")
 		// – base64-encoded characters, for example, U3dhZ2dlciByb2Nrcw ==

@@ -75,7 +75,7 @@ abstract class KotlinGeneratorBase(
 		}
 
 		fun needDates(type: TypeDescr): Boolean {
-			return type.domainFinalName() == "LocalDate"
+			return type.domainFinalName() == "LocalDate" || type.domainFinalName() == "LocalDateTime"
 		}
 	}
 }
