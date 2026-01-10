@@ -37,7 +37,7 @@ class KotlinGeneratorTransport(pkg: PackageConfig) : KotlinGeneratorBaseStructs(
 			field.isStringmap -> "Map<String, $rawType>"
 			else -> rawType
 		}
-		val description = field.description?.let { "\t//$it" } ?: ""
+		val description = field.description.convertToSingleLine()?.let { "\t//$it" } ?: ""
 
 		//all transport fields are made nullable to work around parser not detecting missing mandatories
 		writer.writeLine("var $name: $type? = null$description")

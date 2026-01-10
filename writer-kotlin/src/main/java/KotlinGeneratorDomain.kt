@@ -67,7 +67,7 @@ class KotlinGeneratorDomain(
 		}
 		if (!field.mandatory)
 			type = "$type?"
-		val description = field.description?.let { "\t//$it" } ?: ""
+		val description = field.description.convertToSingleLine()?.let { "\t//$it" } ?: ""
 
 		writer.writeLine("val $name: $type,$description")
 	}

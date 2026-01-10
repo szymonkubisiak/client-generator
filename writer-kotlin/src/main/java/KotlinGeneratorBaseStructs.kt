@@ -26,4 +26,10 @@ abstract class KotlinGeneratorBaseStructs(pkg: PackageConfig) : KotlinGeneratorB
 			writeExtras()
 		}
 	}
+
+	fun String?.convertToSingleLine(): String? {
+		this ?: return null
+		if (this.contains('\n')) return this.lines().joinToString("|")
+		return this
+	}
 }
