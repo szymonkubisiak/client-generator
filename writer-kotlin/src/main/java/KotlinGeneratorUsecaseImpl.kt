@@ -40,7 +40,7 @@ class KotlinGeneratorUsecaseImpl(
 
 			for (param in implicitParams) {
 				val name = kotlinizeVariableName(param.key)
-				val type = param.type.domainFinalName() + if (!param.mandatory) "?" else ""
+				val type = param.type.domainFinalName() //+ if (!param.mandatory) "?" else ""
 				val defaultValue = when (param.key) {
 					//TODO: move to config
 					"x-locale" -> "Locale.getDefault().toLanguageTag()"
