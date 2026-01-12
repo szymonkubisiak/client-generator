@@ -13,6 +13,9 @@ class Api(
 				it.outgoing = false
 				it.outgoingAsForm = false
 			}
+
+		structs.firstOrNull { it.key == "GlobalApiException" }?.markIncoming() //TODO: move to config
+
 		paths.forEach { endpoint ->
 			getStruct(endpoint.response?.type)?.markIncoming()
 			endpoint.params
@@ -41,6 +44,10 @@ class Api(
 	}
 
 	private fun Struct.markIncoming() {
+		if(this.incoming) {
+			//println("double incoming: " + this.key)
+			return
+		}
 		this.incoming = true
 		(this as? StructActual)?.fields
 			?.forEach {
@@ -49,6 +56,10 @@ class Api(
 	}
 
 	private fun Struct.markOutgoing() {
+		if (this.outgoing) {
+			//println("double outgoing: " + this.key)
+			return
+		}
 		this.outgoing = true
 		(this as? StructActual)?.fields
 			?.forEach {
