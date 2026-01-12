@@ -32,8 +32,9 @@ abstract class KotlinGeneratorBase(
 		return retval
 	}
 
-		fun writeParamsDefinitions(writer: IndentedWriter, params: List<IParam>, defaultNullParameters: Boolean = false ) {
-			if(params.isNullOrEmpty()) return
+		fun writeParamsDefinitions(writer: IndentedWriter, argParams: List<IParam>, defaultNullParameters: Boolean = false ) {
+			if(argParams.isNullOrEmpty()) return
+			val params = argParams.preprocessParams()
 			val nullableString = if(defaultNullParameters) "? = null" else "?"
 			IndentedWriter(writer).use { writer ->
 				for (param in params) {
@@ -79,3 +80,5 @@ abstract class KotlinGeneratorBase(
 		}
 	}
 }
+
+private fun List<IParam>.preprocessParams() = this
