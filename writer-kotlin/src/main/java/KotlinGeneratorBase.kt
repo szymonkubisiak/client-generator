@@ -4,9 +4,6 @@ import models.*
 import utils.PackageConfig
 import java.io.PrintWriter
 
-const val jwtToken = "JWT" //duplication in OpenApiConverter
-const val xsrfToken = "X-XSRF-TOKEN"
-
 abstract class KotlinGeneratorBase(
 	val pkg: PackageConfig,
 	protected val typeResolver: TypeResolver = TypeResolver.instance,
@@ -57,8 +54,9 @@ abstract class KotlinGeneratorBase(
 			}
 		}
 
-		fun List<Security>?.handled() = this?.filter { it.key == jwtToken || it.key == xsrfToken } ?: emptyList()
-		fun List<Security>?.passed() = this?.filter { it.key != jwtToken && it.key != xsrfToken } ?: emptyList()
+		private val handledSchemes get() = listOfNotNull(Profile.active.jwtScheme, Profile.active.xsrfScheme)
+		fun List<Security>?.handled() = this?.filter { handledSchemes.contains(it.key) } ?: emptyList()
+		fun List<Security>?.passed() = this?.filter { !handledSchemes.contains(it.key) } ?: emptyList()
 
 
 		fun needDates(endpoints: List<Endpoint>): Boolean {
@@ -81,4 +79,24 @@ abstract class KotlinGeneratorBase(
 	}
 }
 
-private fun List<IParam>.preprocessParams() = this
+private fun List<IParam>.preprocessParams() =
+	Profile.active.paramFormatFallbacks.fold(this) { params, rule -> params.applyFormatFallback(rule) }
+
+/**
+ * If any param has the rule's fromFormat and no param of the guard type is present,
+ * rewrite those params to toFormat (e.g. Pet.ID becomes Pet.IncompleteID without PET_TYPE).
+ */
+private fun List<IParam>.applyFormatFallback(rule: Profile.ParamFormatFallback): List<IParam> {
+	if (none { (it.type as? BuiltinTypeDescr)?.format == rule.fromFormat })
+		return this
+	if (any { it.type.key == rule.guardTypeKey })
+		return this
+
+	return map { param ->
+		val type = param.type as? BuiltinTypeDescr
+		if (type?.format == rule.fromFormat && param is Param)
+			param.copy(type = type.copy(format = rule.toFormat))
+		else
+			param
+	}
+}

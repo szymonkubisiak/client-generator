@@ -53,7 +53,7 @@ class KotlinGeneratorRepoImpl(
 		writer.writeLine("class " + groupName.repoClassName() + "Impl @Inject constructor(")
 		IndentedWriter(writer).use { writer ->
 			writer.writeLine("private val http: " + groupName.serviceClassName() + ",")
-			endpoints.mapNotNull { it.security }.flatten().firstOrNull { it.key == "JWT" }?.also {
+			endpoints.mapNotNull { it.security }.flatten().firstOrNull { it.key == Profile.active.jwtScheme }?.also {
 				writer.writeLine("private val jwt: JwtProvider,")
 			}
 		}
@@ -146,8 +146,8 @@ class KotlinGeneratorRepoImpl(
 
 
 		val handledSecurity = endpoint.security.handled()
-		val jwt = handledSecurity.firstOrNull { it.key == jwtToken }
-		val xsrf = handledSecurity.firstOrNull { it.key == xsrfToken }
+		val jwt = handledSecurity.firstOrNull { it.key == Profile.active.jwtScheme }
+		val xsrf = handledSecurity.firstOrNull { it.key == Profile.active.xsrfScheme }
 
 		val returnType = endpoint.response?.let {
 			val rawType = it.type.domainFinalName()

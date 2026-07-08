@@ -7,21 +7,26 @@ import io.swagger.v3.oas.models.parameters.RequestBody
 import io.swagger.v3.oas.models.responses.ApiResponse
 import models.*
 
-private const val jwtToken = "JWT" //duplication in KotlinGeneratorBase
-
 class OpenApiConverter {
 
 	private val typeFactory = TypeDescrFactory()
+	private val profile = Profile.active
 	private lateinit var securityDefs: List<Security>
 
 	fun swagger2api(input: OpenAPI): Api {
 		val structs = input.components.schemas.map { oneModel ->
 			model2struct(oneModel.key, oneModel.value)
 		}
-		securityDefs = input.components.securitySchemes.map {
-			Security(it.key, parseLocation(it.value.`in`.toString()))
+		securityDefs = (input.components.securitySchemes ?: emptyMap()).mapNotNull {
+			val location = it.value.`in`?.toString()
+			if (location == null) {
+				println("Skipping unsupported security scheme [${it.key}] of type ${it.value.type}")
+				null
+			} else {
+				Security(it.key, parseLocation(location))
+			}
 		}.let { securityDefs ->
-			val optionalJwt = securityDefs.firstOrNull { it.key == jwtToken }?.let { Security(it.key, it.location, false) }
+			val optionalJwt = securityDefs.firstOrNull { it.key == profile.jwtScheme }?.let { Security(it.key, it.location, false) }
 			securityDefs + listOfNotNull(optionalJwt)
 		}
 		val paths = input.paths.flatMap { onePath ->
@@ -49,7 +54,7 @@ class OpenApiConverter {
 		val securityIsOptional = input.security?.any { it.containsKey("none") } ?: false
 		val security = input.security
 			?.flatMap { it.keys }
-			?.mapNotNull { key -> securityDefs.firstOrNull { it.key == key && (it.mandatory != securityIsOptional || it.key != jwtToken) } }
+			?.mapNotNull { key -> securityDefs.firstOrNull { it.key == key && (it.mandatory != securityIsOptional || it.key != profile.jwtScheme) } }
 
 		val concatenatedDescription =
 			listOf(input.summary, input.description).filterNotNull().takeIf { it.isNotEmpty() }?.joinToString("\n")
@@ -62,10 +67,24 @@ class OpenApiConverter {
 			null
 		}
 
+		//tag renaming and collapsing, as configured in the profile
+		val tags = input.tags
+			.map { profile.tagCollapse[it] ?: it }
+			.distinct()
+			.let { collapsed ->
+				val dom = profile.dominantTags.firstOrNull { input.tags.contains(it) }
+				dom?.let { listOf(dom) } ?: collapsed
+			}
+			.map(::Tag)
+
+		if (tags.size > 1) {
+			println("${input.operationId}\t${tags.joinToString("\t")}")
+		}
+
 		return Endpoint(
 			input.operationId,
 			path,
-			input.tags.map(::Tag),
+			tags,
 			operation,
 			(input.parameters?.mapNotNull(::parameter2Param) ?: emptyList()) + (input.requestBody?.let(::body2Param)
 				?: emptyList()),
@@ -163,7 +182,7 @@ class OpenApiConverter {
 			val requireds: List<String> = input.required ?: emptyList()
 			val fields = (input.properties ?: emptyMap()).mapNotNull { oneField ->
 				try {
-					property2field(oneField.key, oneField.value, requireds.contains(oneField.key))
+					property2field(oneField.key, oneField.value, requireds.contains(oneField.key), typeStr)
 						.forceTypeOnID(artificialID, typeStr)
 				} catch (ex: Exception) {
 					null
@@ -199,8 +218,14 @@ class OpenApiConverter {
 		return retval
 	}
 
-	fun property2field(name: String, input: Schema<*>, required: Boolean): Field {
+	fun property2field(name: String, input: Schema<*>, required: Boolean, dbgParentName: String? = null): Field {
 		val originalType = resolveType(input)
+
+		if (originalType.key == "string" && input.enum != null) {
+			println("suspected inline enum in" +
+					(dbgParentName?.let { " struct [$it]" } ?: "") +
+					" field [$name]: ${input.enum}")
+		}
 
 		val retval = Field(
 			key = name,

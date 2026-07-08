@@ -7,6 +7,7 @@ import io.swagger.v3.parser.OpenAPIV3Parser
 import io.swagger.v3.parser.core.models.AuthorizationValue
 import io.swagger.v3.parser.core.models.ParseOptions
 import models.Api
+import models.Profile
 import models.StructActual
 import readback.KotlinReadbackTransport
 import utils.Package
@@ -27,6 +28,19 @@ object Main {
 				load(it)
 			}
 		}
+
+	//API-specific customizations; both files are optional — without them the profile is neutral
+	val profile = try {
+		FileInputStream("private.profile")
+	} catch (ex: FileNotFoundException) {
+		try {
+			FileInputStream("app.profile")
+		} catch (ex2: FileNotFoundException) {
+			null
+		}
+	}?.use {
+		Profile(Properties().apply { load(it) })
+	} ?: Profile(Properties())
 
 	val kotlinTReadback: KotlinReadbackTransport
 	val kotlinT: KotlinGeneratorTransport
@@ -89,6 +103,15 @@ object Main {
 	@JvmStatic
 	fun main(args: Array<String>) {
 		println("Hello World!")
+		Profile.active = profile
+		profile.customTypes.forEach {
+			TypeResolver.instance.addType(
+				it.transportType, it.format,
+				it.kotlinTransport, it.kotlinDomain,
+				it.toDomainAdapter, it.toTransportAdapter,
+			)
+		}
+
 		val inputfile = properties.getProperty("app.inputfile")
 		val auth = properties.getProperty("app.inputfileBasicAuth")?.let {
 			AuthorizationValue("Authorization", "Basic " + Base64.getEncoder().encodeToString(it.encodeToByteArray()), "header")
@@ -96,14 +119,11 @@ object Main {
 		val openAPI: OpenAPI = OpenAPIV3Parser().read(inputfile, listOfNotNull(auth), ParseOptions().apply { isResolve = true })
 		val apiTmp = OpenApiConverter().swagger2api(openAPI)
 
-		val ignoredTags = listOf(
-			"TagsYouWantToIgnore",
-		)
 		val reorderedStructs = kotlinTReadback.reorderStructFields(apiTmp.structs)
 		val api = Api(reorderedStructs,
 			apiTmp.paths.filter { endpoint ->
 				endpoint.tags.none { tag ->
-					ignoredTags.contains(tag.key)
+					profile.ignoredTags.contains(tag.key)
 				}
 			}
 		)
