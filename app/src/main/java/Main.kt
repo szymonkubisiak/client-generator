@@ -154,20 +154,24 @@ object Main {
 	}
 
 	private fun writeAllToFiles(api: Api) {
-		//tags and solo endpoints are sorted alphabetically into one stable order shared by all *Module generators
-		val moduleGroups: List<EndpointGroup> =
-			(api.tags + api.paths.filter { it.tags.isEmpty() }).sortedBy { it.key }
+		//single decision point: endpoint files are generated once per group, grouped by tag and by access level
+		val groups: List<KotlinGeneratorBaseEndpoints.Group> =
+			KotlinGeneratorBaseEndpoints.groupByTags(api.paths) +
+					//KotlinGeneratorBaseEndpoints.groupBySecurity(api.paths) +
+					emptyList()
+		//all *Module generators share one alphabetical order, consistent with the group files above
+		val moduleGroups: List<EndpointGroup> = groups.map { it.name }.sortedBy { it.key }
 
 		kotlinT.writeStructs(api.structs)
 		kotlinD.writeStructs(api.structs)
 		kotlinT2D.writeStructs(api.structs)
-		kotlinRetrofit.writeEndpoits(api.paths)
+		kotlinRetrofit.writeEndpoits(groups)
 		kotlinRetrofitModule.writeEndpoints(moduleGroups)
-		kotlinGeneratorRepo.writeEndpoits(api.paths)
-		kotlinGeneratorRepoImpl.writeEndpoits(api.paths)
+		kotlinGeneratorRepo.writeEndpoits(groups)
+		kotlinGeneratorRepoImpl.writeEndpoits(groups)
 		kotlinGeneratorRepoModule.writeEndpoints(moduleGroups)
-		kotlinGeneratorUsecase.writeEndpoits(api.paths)
-		kotlinGeneratorUsecaseImpl.writeEndpoits(api.paths)
+		kotlinGeneratorUsecase.writeEndpoits(groups)
+		kotlinGeneratorUsecaseImpl.writeEndpoits(groups)
 		kotlinGeneratorUsecaseModule.writeEndpoints(moduleGroups)
 	}
 

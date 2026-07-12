@@ -32,6 +32,15 @@ class Profile constructor(props: Properties) {
 	/** name of the XSRF security scheme handled inside generated repos */
 	val xsrfScheme: String? = props.getProperty("security.xsrf")
 
+	/** endpoints (by name) forced into the logged-in access group despite requiring no JWT, e.g. login/token calls */
+	val loggedInOverrideRegex: Regex? = props.getProperty("groups.loggedIn.regex")?.toRegex()
+
+	/** endpoints (by name) forced into the public access group despite requiring JWT */
+	val publicOverrideRegex: Regex? = props.getProperty("groups.public.regex")?.toRegex()
+
+	/** endpoints carrying any of these tags are forced into the logged-in access group; the name regexes win */
+	val loggedInTags: List<String> = props.list("groups.loggedIn.tags")
+
 	/**
 	 * custom scalar types registered in TypeResolver; rows separated by ';', fields by '|':
 	 * transportType|format|kotlinTransport                                          (same type on both sides)
