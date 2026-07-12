@@ -7,6 +7,7 @@ import io.swagger.v3.parser.OpenAPIV3Parser
 import io.swagger.v3.parser.core.models.AuthorizationValue
 import io.swagger.v3.parser.core.models.ParseOptions
 import models.Api
+import models.EndpointGroup
 import models.Profile
 import models.StructActual
 import readback.KotlinReadbackTransport
@@ -120,13 +121,12 @@ object Main {
 		val apiTmp = OpenApiConverter().swagger2api(openAPI)
 
 		val reorderedStructs = kotlinTReadback.reorderStructFields(apiTmp.structs)
-		val api = Api(reorderedStructs,
-			apiTmp.paths.filter { endpoint ->
-				endpoint.tags.none { tag ->
-					profile.ignoredTags.contains(tag.key)
-				}
+		val filteredPaths = apiTmp.paths.filter { endpoint ->
+			endpoint.tags.none { tag ->
+				profile.ignoredTags.contains(tag.key)
 			}
-		)
+		}
+		val api = Api(reorderedStructs, filteredPaths)
 
 		val typesWithArtificialId = api.structs
 			.mapNotNull { it as? StructActual }
@@ -154,17 +154,21 @@ object Main {
 	}
 
 	private fun writeAllToFiles(api: Api) {
+		//tags and solo endpoints are sorted alphabetically into one stable order shared by all *Module generators
+		val moduleGroups: List<EndpointGroup> =
+			(api.tags + api.paths.filter { it.tags.isEmpty() }).sortedBy { it.key }
+
 		kotlinT.writeStructs(api.structs)
 		kotlinD.writeStructs(api.structs)
 		kotlinT2D.writeStructs(api.structs)
 		kotlinRetrofit.writeEndpoits(api.paths)
-		kotlinRetrofitModule.writeEndpoints(api.paths)
+		kotlinRetrofitModule.writeEndpoints(moduleGroups)
 		kotlinGeneratorRepo.writeEndpoits(api.paths)
 		kotlinGeneratorRepoImpl.writeEndpoits(api.paths)
-		kotlinGeneratorRepoModule.writeEndpoints(api.paths)
+		kotlinGeneratorRepoModule.writeEndpoints(moduleGroups)
 		kotlinGeneratorUsecase.writeEndpoits(api.paths)
 		kotlinGeneratorUsecaseImpl.writeEndpoits(api.paths)
-		kotlinGeneratorUsecaseModule.writeEndpoints(api.paths)
+		kotlinGeneratorUsecaseModule.writeEndpoints(moduleGroups)
 	}
 
 	private fun parseAndPrepareSwagger(path: String): Swagger {

@@ -3,6 +3,7 @@ package models
 class Api(
 	val structs: List<Struct>,
 	val paths: List<Endpoint>,
+	val tags: List<Tag> = paths.flatMap { it.tags }.distinct().sortedBy { it.key },
 ) {
 
 	init {

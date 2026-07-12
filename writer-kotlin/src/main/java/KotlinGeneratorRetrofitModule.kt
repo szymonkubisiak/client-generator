@@ -1,5 +1,5 @@
 import Namer.serviceClassName
-import models.Endpoint
+import models.EndpointGroup
 import utils.PackageConfig
 import java.io.PrintWriter
 
@@ -9,7 +9,7 @@ class KotlinGeneratorRetrofitModule(
 	val service: PackageConfig,
 ) {
 
-	fun writeEndpoints(input: List<Endpoint>) {
+	fun writeEndpoints(groups: List<EndpointGroup>) {
 		val directory = pkg.toDir()
 		Utils.createDirectories(directory)
 
@@ -29,15 +29,9 @@ class KotlinGeneratorRetrofitModule(
 			writer.writeLine("class $className {")
 
 			IndentedWriter(writer).use { writer ->
-				val tags = input.flatMap { it.tags }.distinct()
-				tags.forEach { tag ->
-					writeEndpoint(writer, tag.serviceClassName())
+				groups.forEach { group ->
+					writeEndpoint(writer, group.serviceClassName())
 				}
-
-				input.filter { it.tags.isNullOrEmpty() }
-					.forEach { one ->
-						writeEndpoint(writer, one.serviceClassName())
-					}
 
 				writer.writeLine("private inline fun <reified S> provideService(wrapper: RetrofitProvider) = wrapper.provide().create(S::class.java)")
 			}

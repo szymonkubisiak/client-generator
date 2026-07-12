@@ -1,5 +1,4 @@
 import Namer.usecaseClassName
-import models.Endpoint
 import models.EndpointGroup
 import utils.PackageConfig
 import java.io.PrintWriter
@@ -11,7 +10,7 @@ class KotlinGeneratorUsecaseModule(
 	val useCaseImpl: PackageConfig,
 ) {
 
-	fun writeEndpoints(input: List<Endpoint>) {
+	fun writeEndpoints(groups: List<EndpointGroup>) {
 		val directory = pkg.toDir()
 		Utils.createDirectories(directory)
 
@@ -32,15 +31,9 @@ class KotlinGeneratorUsecaseModule(
 			writer.writeLine("interface $className {")
 
 			IndentedWriter(writer).use { writer ->
-				val tags = input.flatMap { it.tags }.distinct()
-				tags.forEach { tag ->
-					writeEndpoint(writer, tag)
+				groups.forEach { group ->
+					writeEndpoint(writer, group)
 				}
-
-				input.filter { it.tags.isNullOrEmpty() }
-					.forEach { one ->
-						writeEndpoint(writer, one)
-					}
 			}
 
 			writer.writeLine("}")
