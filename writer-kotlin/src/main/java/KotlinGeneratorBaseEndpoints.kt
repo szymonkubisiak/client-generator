@@ -1,7 +1,8 @@
+import models.AccessGroup
 import models.Endpoint
 import models.EndpointGroup
 import models.Param
-import models.Tag
+import models.Profile
 import utils.PackageConfig
 
 abstract class KotlinGeneratorBaseEndpoints(pkg: PackageConfig) : KotlinGeneratorBase(pkg) {
@@ -12,25 +13,12 @@ abstract class KotlinGeneratorBaseEndpoints(pkg: PackageConfig) : KotlinGenerato
 
 	data class Group(val name: EndpointGroup, val contents: List<Endpoint>)
 
-	fun writeEndpoits(input: List<Endpoint>) {
+	fun writeEndpoits(groups: List<Group>) {
 		pkg.createAndCleanupDirectory()
 
-		input.flatMap { it.tags }
-			.distinct()
-			.map { tag ->
-				Group(tag, input.filter { it.tags.contains(tag) })
-			}
-			.forEach { group ->
-				writeGroup(group.name, group.contents)
-			}
-
-		input.filter { it.tags.isEmpty() }
-			.map { one ->
-				Group(one, listOf(one))
-			}
-			.forEach { group ->
-				writeGroup(group.name, group.contents)
-			}
+		groups.forEach { group ->
+			writeGroup(group.name, group.contents)
+		}
 
 		writeExtras()
 	}
@@ -47,5 +35,43 @@ abstract class KotlinGeneratorBaseEndpoints(pkg: PackageConfig) : KotlinGenerato
 		}
 
 		fun isParamNotImplicit(param: Param) = !isParamImplicit(param)
+
+		/** one group per tag; untagged endpoints fly solo, one group each */
+		fun groupByTags(input: List<Endpoint>): List<Group> {
+			val tagged = input.flatMap { it.tags }
+				.distinct()
+				.map { tag ->
+					Group(tag, input.filter { it.tags.contains(tag) })
+				}
+
+			val solo = input.filter { it.tags.isEmpty() }
+				.map { one ->
+					Group(one, listOf(one))
+				}
+
+			return tagged + solo
+		}
+
+		/** two groups by access level: no JWT is public, mandatory or optional JWT is logged-in;
+		 * profile regexes override the split for endpoints whose access level doesn't follow their security
+		 * (e.g. login/token calls need no JWT yet belong to the logged-in area) */
+		fun groupBySecurity(input: List<Endpoint>): List<Group> {
+			val profile = Profile.active
+			val jwtScheme = profile.jwtScheme ?: return emptyList()
+
+			val (loggedIn, public) = input.partition { endpoint ->
+				when {
+					profile.loggedInOverrideRegex?.matches(endpoint.name) == true -> true
+					profile.publicOverrideRegex?.matches(endpoint.name) == true -> false
+					endpoint.tags.any { profile.loggedInTags.contains(it.key) } -> true
+					else -> endpoint.security?.any { it.key == jwtScheme } == true
+				}
+			}
+
+			return listOf(
+				Group(AccessGroup("public"), public),
+				Group(AccessGroup("loggedIn"), loggedIn),
+			).filter { it.contents.isNotEmpty() }
+		}
 	}
 }

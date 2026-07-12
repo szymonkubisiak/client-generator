@@ -19,6 +19,14 @@
 #security.jwt=JWT
 #security.xsrf=X-XSRF-TOKEN
 
+# Access-level grouping (public vs logged-in, split by JWT presence; needs security.jwt):
+# endpoints whose name fully matches a regex are forced into that group regardless of security,
+# endpoints carrying any of the listed tags are forced into the logged-in group (the regexes win).
+# Typical use: login/token endpoints require no JWT but belong to the logged-in area.
+#groups.loggedIn.regex=login|jwt
+#groups.public.regex=healthCheck
+#groups.loggedIn.tags=Auth
+
 # Param preprocessing rules "fromFormat|toFormat|guardTypeKey", separated by ';':
 # params of format fromFormat are rewritten to toFormat unless a param of type guardTypeKey is present.
 #params.formatFallback=ID:Pet.ID|ID:Pet.IncompleteID|PET_TYPE
