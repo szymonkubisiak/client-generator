@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.5.20'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.24'
 }
 
 repositories {
@@ -10,7 +10,7 @@ repositories {
 dependencies {
     api project(":domain")
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
 
     api "io.swagger.parser.v3:swagger-parser:2.0.33"
     api "org.slf4j:slf4j-simple:2.0.0-alpha2"
