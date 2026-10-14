@@ -34,6 +34,26 @@ class KotlinGeneratorRepoImpl(
 			}
 			writer.writeLine("}")
 		}
+
+		val localeFields = Profile.active.localeParams.values.distinct()
+		if (localeFields.isNotEmpty()) pkg.openFile("LocaleProvider.kt").use { writer ->
+			writer.writeLine("package " + pkg.toPackage())
+			writer.writeLine("")
+			writer.writeLine("import io.reactivex.rxjava3.core.Single")
+			writer.writeLine("")
+			writer.writeLine("interface LocaleProvider {")
+			IndentedWriter(writer).use { writer ->
+				writer.writeLine("")
+				writer.writeLine("interface LocaleDefinition {")
+				IndentedWriter(writer).use { writer ->
+					localeFields.forEach { writer.writeLine("val $it: String") }
+				}
+				writer.writeLine("}")
+				writer.writeLine("")
+				writer.writeLine("fun provideLocale(): Single<LocaleDefinition>")
+			}
+			writer.writeLine("}")
+		}
 	}
 
 	override fun writeEndpointInternal(writer: GeneratorWriter, groupName: EndpointGroup, endpoints: List<Endpoint>) {
@@ -56,6 +76,10 @@ class KotlinGeneratorRepoImpl(
 			endpoints.mapNotNull { it.security }.flatten().firstOrNull { it.key == Profile.active.jwtScheme }?.also {
 				writer.writeLine("private val jwt: JwtProvider,")
 			}
+
+			endpoints.any { it.handledParams().isNotEmpty() }.takeIf { it }?.also {
+				writer.writeLine("private val localer: LocaleProvider,")
+			}
 		}
 		writer.writeLine("): ${groupName.repoClassName()} {")
 		IndentedWriter(writer).use { writer ->
@@ -75,7 +99,7 @@ class KotlinGeneratorRepoImpl(
 		}
 		val handledSecurities = endpoint.security.handled()
 
-		if (handledSecurities.isEmpty()) {
+		if (handledSecurities.isEmpty() && endpoint.handledParams().isEmpty()) {
 			writer.writeLine("override fun " + endpoint.repoMethodName() + "(")
 		} else {
 			writeEndpointMethodWrapper(writer, endpoint)
@@ -141,7 +165,7 @@ class KotlinGeneratorRepoImpl(
 		endpoint: Endpoint,
 	) {
 		writer.writeLine("override fun " + endpoint.repoMethodName() + "(")
-		writeParamsDefinitions(writer, endpoint.params)
+		writeParamsDefinitions(writer, endpoint.passedParams())
 		writeFunctionReturnType(writer, endpoint)
 
 
@@ -155,33 +179,39 @@ class KotlinGeneratorRepoImpl(
 			"<$type>"
 		} ?: ""
 
-		IndentedWriter(writer).use { writer ->
-			//writer.writeLine("return jwt.executeWithJwt(::" + endpoint.repoMethodName() + "Internal)")
-			if (jwt != null && xsrf == null) {
-				if(jwt.mandatory)
-					writer.writeLine("return jwt.executeWithJwt { jwt ->")
-				else
-					writer.writeLine("return jwt.executeWithOptionalJwt { jwt ->")
-			} else if (jwt != null && xsrf != null) {
-				writer.writeLine("return jwt.executeWithJwtAndXsrf$returnType { jwt, xsrf ->")
-			} else {
-				writer.writeLine("TODO(\"handle other jwt/xsrf combinations\")")
-				return@use
+		val localeOpener = endpoint.handledParams().takeIf { it.isNotEmpty() }?.let {
+			val flatMap = if (endpoint.response != null) "flatMap" else "flatMapCompletable"
+			"localer.provideLocale().$flatMap { locale ->"
+		}
+		val securityOpener = when {
+			jwt != null && xsrf == null -> if (jwt.mandatory) "jwt.executeWithJwt { jwt ->" else "jwt.executeWithOptionalJwt { jwt ->"
+			jwt != null && xsrf != null -> "jwt.executeWithJwtAndXsrf$returnType { jwt, xsrf ->"
+			xsrf != null -> {
+				IndentedWriter(writer).use { writer ->
+					writer.writeLine("TODO(\"handle other jwt/xsrf combinations\")")
+				}
+				writer.writeLine("}")
+				writer.writeLine("")
+				return
 			}
+			else -> null
+		}
 
-			IndentedWriter(writer).use { writer ->
-				writer.writeLine(endpoint.repoMethodName() + "Internal(")
+		IndentedWriter(writer).use { writer ->
+			// locale is resolved outside of jwt, so token refresh retries don't fetch it again
+			writeNested(writer, listOfNotNull(localeOpener, securityOpener), "return ") { writer, prefix ->
+				writer.writeLine(prefix + endpoint.repoMethodName() + "Internal(")
 				IndentedWriter(writer).use { writer ->
 					if (jwt != null) writer.writeLine("jwt,")
 					if (xsrf != null) writer.writeLine("xsrf,")
 					for (param in endpoint.params) {
-						val name = kotlinizeVariableName(param.key)
+						val localeField = Profile.active.localeParams[param.key]
+						val name = localeField?.let { "locale.$it" } ?: kotlinizeVariableName(param.key)
 						writer.writeLine("$name,")
 					}
 				}
 				writer.writeLine(")")
 			}
-			writer.writeLine("}")
 		}
 		writer.writeLine("}")
 		writer.writeLine("")
@@ -189,6 +219,24 @@ class KotlinGeneratorRepoImpl(
 
 
 companion object {
+	/** writes each opener as a lambda nested in the previous one, with body in the innermost */
+	private fun writeNested(
+		writer: IndentedWriter,
+		openers: List<String>,
+		prefix: String,
+		body: (writer: IndentedWriter, prefix: String) -> Unit,
+	) {
+		if (openers.isEmpty()) {
+			body(writer, prefix)
+			return
+		}
+		writer.writeLine(prefix + openers.first())
+		IndentedWriter(writer).use { writer ->
+			writeNested(writer, openers.drop(1), "", body)
+		}
+		writer.writeLine("}")
+	}
+
 	private fun writeFunctionReturnType(writer: IndentedWriter, endpoint: Endpoint) {
 		endpoint.response?.also {
 			val rawType = it.type.domainFinalName()

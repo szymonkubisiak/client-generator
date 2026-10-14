@@ -19,6 +19,10 @@
 #security.jwt=JWT
 #security.xsrf=X-XSRF-TOKEN
 
+# Header params filled inside generated repos from LocaleProvider (hidden from repo/usecase signatures):
+# comma-separated header>field entries, field being a generated LocaleProvider.LocaleDefinition property.
+#params.locale=x-locale>xLocale,countryCode>countryCode
+
 # Access-level grouping (public vs logged-in, split by JWT presence; needs security.jwt):
 # endpoints whose name fully matches a regex are forced into that group regardless of security,
 # endpoints carrying any of the listed tags are forced into the logged-in group (the regexes win).

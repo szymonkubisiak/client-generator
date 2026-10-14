@@ -20,7 +20,7 @@ class KotlinGeneratorUsecaseImpl(
 
 	override fun writeEndpointInternal(writer: GeneratorWriter, groupName: EndpointGroup, endpoints: List<Endpoint>) {
 		val implicitParams =
-				endpoints.flatMap { endpoint -> endpoint.params.filter(::isParamImplicit) }.distinctBy { it.key }
+				endpoints.flatMap { endpoint -> endpoint.passedParams().filter(::isParamImplicit) }.distinctBy { it.key }
 
 		writer.writeLine("package " + pkg.toPackage())
 		writer.writeLine("")
@@ -29,7 +29,6 @@ class KotlinGeneratorUsecaseImpl(
 		writer.writeLine("import " + domain.toPackage() + ".*")
 		writer.writeLine("import " + ucDefs.toPackage() + ".*")
 		writer.writeLine("import " + repoDefs.toPackage() + ".*")
-		if (implicitParams.isNotEmpty()) writer.writeLine("import java.util.*")
 		if (needDates(endpoints))
 			writer.writeLine("import java.time.*")
 		writer.writeLine("import javax.inject.Inject")
@@ -39,14 +38,11 @@ class KotlinGeneratorUsecaseImpl(
 		IndentedWriter(writer).use { writer ->
 
 			for (param in implicitParams) {
+				if(Profile.active.localeParams.containsKey(param.key))
+					continue
 				val name = kotlinizeVariableName(param.key)
 				val type = param.type.domainFinalName() //+ if (!param.mandatory) "?" else ""
-				val defaultValue = when (param.key) {
-					//TODO: move to config
-					"x-locale" -> "Locale.getDefault().toLanguageTag()"
-					else -> "\"unknown value\""
-				}
-				writer.writeLine("private val $name: $type = $defaultValue")
+				writer.writeLine("private val $name: $type = \"unknown value\"")
 			}
 
 			endpoints.forEach { endpoint ->
@@ -64,7 +60,7 @@ class KotlinGeneratorUsecaseImpl(
 			//TODO: make entire comment javadoc-compliant
 			//writer.writeLine("/**")
 			//descriptionLines.forEach { writer.writeLine("* $it") }
-			endpoint.params
+			endpoint.passedParams()
 				.filter { !it.description.isNullOrEmpty() && isParamNotImplicit(it) }
 				.forEachIndexed { index, param ->
 					if (index == 0) writer.writeLine("*")
@@ -75,7 +71,7 @@ class KotlinGeneratorUsecaseImpl(
 			writer.writeLine("*/")
 		}
 		writer.writeLine("override fun " + endpoint.usecaseMethodName() + "(")
-		writeParamsDefinitions(writer, endpoint.security.passed() + endpoint.params.filter(::isParamNotImplicit))
+		writeParamsDefinitions(writer, endpoint.security.passed() + endpoint.passedParams().filter(::isParamNotImplicit))
 		endpoint.response?.also {
 			val rawType = it.type.domainFinalName()
 			val type = if (!it.isArray) rawType else "List<$rawType>"
@@ -85,7 +81,7 @@ class KotlinGeneratorUsecaseImpl(
 		}
 		IndentedWriter(writer).use { writer ->
 			writer.writeLine("return repo." + endpoint.repoMethodName() + "(")
-			writeParamsCalls (writer, endpoint.security.passed() + endpoint.params)
+			writeParamsCalls (writer, endpoint.security.passed() + endpoint.passedParams())
 			writer.writeLine(")")
 		}
 		writer.writeLine("}")

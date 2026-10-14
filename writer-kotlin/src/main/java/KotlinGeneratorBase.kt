@@ -58,6 +58,9 @@ abstract class KotlinGeneratorBase(
 		fun List<Security>?.handled() = this?.filter { handledSchemes.contains(it.key) } ?: emptyList()
 		fun List<Security>?.passed() = this?.filter { !handledSchemes.contains(it.key) } ?: emptyList()
 
+		fun Endpoint.handledParams() = params.filter { Profile.active.localeParams.containsKey(it.key) }
+		fun Endpoint.passedParams() = params.filter { !Profile.active.localeParams.containsKey(it.key) }
+
 
 		fun needDates(endpoints: List<Endpoint>): Boolean {
 			return endpoints.any { endpoint ->

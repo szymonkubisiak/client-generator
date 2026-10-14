@@ -32,6 +32,14 @@ class Profile constructor(props: Properties) {
 	/** name of the XSRF security scheme handled inside generated repos */
 	val xsrfScheme: String? = props.getProperty("security.xsrf")
 
+	/** header params filled inside generated repos from LocaleProvider: comma-separated "header>field" entries */
+	val localeParams: Map<String, String> = props.list("params.locale")
+		.associate { entry ->
+			val parts = entry.split('>')
+			require(parts.size == 2) { "malformed params.locale entry: $entry" }
+			parts[0].trim() to parts[1].trim()
+		}
+
 	/** endpoints (by name) forced into the logged-in access group despite requiring no JWT, e.g. login/token calls */
 	val loggedInOverrideRegex: Regex? = props.getProperty("groups.loggedIn.regex")?.toRegex()
 

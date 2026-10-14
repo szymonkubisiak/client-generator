@@ -39,7 +39,7 @@ class KotlinGeneratorUsecase(
 			writer.writeLine("@Deprecated(\"$it\")")
 		}
 		writer.writeLine("fun " + endpoint.repoMethodName() + "(")
-		writeParamsDefinitions(writer, endpoint.security.passed() + endpoint.params.filter(::isParamNotImplicit), true)
+		writeParamsDefinitions(writer, endpoint.security.passed() + endpoint.passedParams().filter(::isParamNotImplicit), true)
 		endpoint.response?.also {
 			val rawType = it.type.domainFinalName()
 			val type = if (!it.isArray) rawType else "List<$rawType>"
